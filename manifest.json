@@ -2,7 +2,7 @@
   "name": "GANADERO ELITE",
   "short_name": "Ganadero Elite",
   "description": "Gestion inteligente de ganaderia - Sanidad, finanzas y nutricion integrada",
-  "start_url": ".",
+  "start_url": "./GANADERO%20ELITE.html"
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#030303",
