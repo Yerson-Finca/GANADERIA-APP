@@ -1,16 +1,28 @@
 {
-  "name": "GANADERÍA ÉLITE",
-  "short_name": "G. ÉLITE",
-  "description": "Sistema de gestión ganadera profesional offline",
-  "start_url": "index.html",
+  "name": "GANADERO ÉLITE",
+  "short_name": "Ganadero Élite",
+  "description": "Gestión inteligente de ganadería - Sanidad, finanzas y nutrición integrada",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "background_color": "#030303",
+  "theme_color": "#fbbf24",
+  "lang": "es-CO",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2304/2304880.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23030303'/%3E%3Ctext x='96' y='110' font-size='80' text-anchor='middle' fill='%23fbbf24' font-family='Arial'%3E🐄%3C/text%3E%3Ctext x='96' y='150' font-size='20' text-anchor='middle' fill='%23fbbf24' font-family='Arial' font-weight='bold'%3EGE%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23030303'/%3E%3Ctext x='256' y='280' font-size='200' text-anchor='middle' fill='%23fbbf24' font-family='Arial'%3E🐄%3C/text%3E%3Ctext x='256' y='380' font-size='50' text-anchor='middle' fill='%23fbbf24' font-family='Arial' font-weight='bold'%3EGANADERO ÉLITE%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false
 }
