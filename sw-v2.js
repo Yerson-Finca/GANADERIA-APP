@@ -1,11 +1,16 @@
-var CACHE_NAME = 'ganadero-v13';
+var CACHE_NAME = 'ganadero-v15';
 
-var urlsToCache = [
+// Archivos locales
+var urlsLocales = [
     './',
     './index.html',
     './styles.css',
     './app.js',
-    './manifest.json',
+    './manifest.json'
+];
+
+// Archivos CDN que se descargan automáticamente
+var urlsCDN = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2',
@@ -15,17 +20,23 @@ var urlsToCache = [
 self.addEventListener('install', function(e) {
     e.waitUntil(
         caches.open(CACHE_NAME).then(function(cache) {
-            console.log('Cacheando archivos...');
-            return Promise.all(
-                urlsToCache.map(function(url) {
-                    return fetch(url, { mode: 'no-cors' }).then(function(response) {
+            // Cachear locales
+            var localesPromise = cache.addAll(urlsLocales);
+            
+            // Cachear CDNs uno por uno (sin que fallen los demás si uno falla)
+            var cdnPromises = urlsCDN.map(function(url) {
+                return fetch(url, { mode: 'cors' }).then(function(response) {
+                    if (response.ok) {
                         return cache.put(url, response);
-                    }).catch(function(err) {
-                        console.log('No se pudo cachear:', url);
-                    });
-                })
-            );
+                    }
+                }).catch(function() {
+                    console.log('No se pudo precachear:', url);
+                });
+            });
+            
+            return Promise.all([localesPromise].concat(cdnPromises));
         }).then(function() {
+            console.log('✅ Todos los archivos cacheados');
             return self.skipWaiting();
         })
     );
@@ -48,6 +59,7 @@ self.addEventListener('fetch', function(e) {
     e.respondWith(
         caches.match(e.request).then(function(cached) {
             if (cached) return cached;
+            
             return fetch(e.request).then(function(response) {
                 if (response && response.status === 200) {
                     var clone = response.clone();
@@ -57,7 +69,10 @@ self.addEventListener('fetch', function(e) {
                 }
                 return response;
             }).catch(function() {
-                return caches.match('./index.html');
+                if (e.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+                return new Response('', {status: 200});
             });
         })
     );
