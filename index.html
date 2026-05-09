@@ -58,5 +58,15 @@
     </div>
 
     <script src="./app.js"></script>
+    <script>
+// Forzar ocultar splash si no se ocultó después de 3 segundos
+setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash && !splash.classList.contains('hide')) {
+        splash.classList.add('hide');
+        console.log('Splash forzado');
+    }
+}, 3000);
+</script>
 </body>
 </html>
