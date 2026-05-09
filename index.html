@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GANADERO ÉLITE v3.0</title>
+    <title>GANADERO ÉLITE v3.1</title>
     <meta name="theme-color" content="#030303">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,16 +19,16 @@
     <div id="toastContainer"></div>
     <div id="modalContainer"></div>
 
-    <div class="splash" id="splash">
-    <div class="splash-icon">🐄</div>
-    <div class="splash-title">GANADERO ÉLITE</div>
-    <div class="splash-sub">v3.0 · IA Local</div>
-</div>
+    <div class="splash" id="splash" onclick="document.getElementById('splash').classList.add('hide')">
+        <div class="splash-icon">🐄</div>
+        <div class="splash-title">GANADERO ÉLITE</div>
+        <div class="splash-sub">v3.1 · IA + Alertas</div>
+    </div>
 
     <div class="app">
         <header>
             <h1><i class="fa-solid fa-crown"></i> GANADERO ÉLITE</h1>
-            <p class="subtitle">Inteligencia Artificial Local</p>
+            <p class="subtitle">Inteligencia Artificial · Alertas Inteligentes</p>
         </header>
         <div id="v-lote" class="page"></div>
         <div id="v-insumos" class="hidden page"></div>
@@ -39,9 +39,9 @@
 
     <nav class="bottom-nav" id="bottomNav">
         <button class="bn-btn active" data-p="lote"><i class="fa-solid fa-chart-pie"></i><span>Lote</span></button>
-        <button class="bn-btn" data-p="insumos"><i class="fa-solid fa-boxes"></i><span>Insumos</span></button>
-        <button class="bn-btn-add" onclick="toggleAdd()"><i class="fa-solid fa-plus"></i></button>
         <button class="bn-btn" data-p="sanidad"><i class="fa-solid fa-syringe"></i><span>Sanidad</span></button>
+        <button class="bn-btn-add" onclick="toggleAdd()"><i class="fa-solid fa-plus"></i></button>
+        <button class="bn-btn" data-p="insumos"><i class="fa-solid fa-boxes"></i><span>Insumos</span></button>
         <button class="bn-btn" data-p="ajustes"><i class="fa-solid fa-gear"></i><span>Ajustes</span></button>
     </nav>
 
@@ -58,15 +58,5 @@
     </div>
 
     <script src="./app.js"></script>
-    <script>
-// Forzar ocultar splash si no se ocultó después de 3 segundos
-setTimeout(function() {
-    var splash = document.getElementById('splash');
-    if (splash && !splash.classList.contains('hide')) {
-        splash.classList.add('hide');
-        console.log('Splash forzado');
-    }
-}, 3000);
-</script>
 </body>
 </html>
