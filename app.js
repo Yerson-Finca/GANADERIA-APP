@@ -1,13 +1,11 @@
 /*
- * ==================== GANADERO ÉLITE v2.1 ====================
- * 1. Inicialización  2. Utilidades  3. Base de datos
- * 4. Catálogos  5. Fórmulas  6. Navegación
- * 7. Render Lote  8. Render Insumos  9. Render Sanidad
- * 10. Render Ajustes  11. Perfil  12. Aplicar productos
- * 13. Agregar suplementos  14. Auto-guardado
+ * ==================== GANADERO ÉLITE v2.2 ====================
+ * Suplementos con g/kg de peso vivo, editables, dieta dinámica
+ * 1. Inicialización  2. Utilidades  3. DB  4. Catálogos
+ * 5. Fórmulas  6. Navegación  7. Lote  8. Insumos
+ * 9. Sanidad  10. Ajustes  11. Perfil  12. Auto-guardado
  */
-
-console.log('🚀 GANADERO ÉLITE v2.1 iniciando...');
+console.log('🚀 GANADERO ÉLITE v2.2');
 
 // ==================== 1. INICIALIZACIÓN ====================
 if ('serviceWorker' in navigator) {
@@ -17,85 +15,34 @@ if ('serviceWorker' in navigator) {
         }
     });
 }
-
-setTimeout(function() {
-    var splash = document.getElementById('splash');
-    if (splash) splash.classList.add('hide');
-}, 800);
+setTimeout(function() { var s = document.getElementById('splash'); if (s) s.classList.add('hide'); }, 800);
 
 // ==================== 2. UTILIDADES ====================
-function fm(n) {
-    if (isNaN(n) || n === null || n === undefined) return '0';
-    n = Math.round(n);
-    var s = String(n), r = '', c = 0;
-    for (var i = s.length - 1; i >= 0; i--) {
-        if (c > 0 && c % 3 === 0) r = '.' + r;
-        r = s.charAt(i) + r; c++;
-    }
-    return r;
-}
-
-function showToast(m, d) {
-    d = d || 3000;
-    var t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m;
-    document.getElementById('toastContainer').appendChild(t);
-    setTimeout(function() { t.remove(); }, d);
-}
-
-function showModal(h) {
-    var o = document.createElement('div'); o.className = 'modal-overlay';
-    o.innerHTML = '<div class="modal">' + h + '</div>';
-    o.onclick = function(e) { if (e.target === o) o.remove(); };
-    document.getElementById('modalContainer').appendChild(o);
-}
+function fm(n) { if (isNaN(n) || n === null || n === undefined) return '0'; n = Math.round(n); var s = String(n), r = '', c = 0; for (var i = s.length - 1; i >= 0; i--) { if (c > 0 && c % 3 === 0) r = '.' + r; r = s.charAt(i) + r; c++; } return r; }
+function showToast(m, d) { d = d || 3000; var t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m; document.getElementById('toastContainer').appendChild(t); setTimeout(function() { t.remove(); }, d); }
+function showModal(h) { var o = document.createElement('div'); o.className = 'modal-overlay'; o.innerHTML = '<div class="modal">' + h + '</div>'; o.onclick = function(e) { if (e.target === o) o.remove(); }; document.getElementById('modalContainer').appendChild(o); }
 
 // ==================== 3. BASE DE DATOS ====================
 var DB = {
-    animales: [],
-    aplicaciones: [],
+    animales: [], aplicaciones: [],
     precios: { pasto:1200, salvado:2500, melaza:3800, levadura:8000, bicarb:4500, sal:6200, urea:9500 },
     stock: { pasto:500, salvado:200, melaza:50, levadura:10, bicarb:5, sal:2, urea:20 },
-    stockSanidad: {},
-    preciosSanidad: {},
-    suplementosAlimento: [],    // Suplementos alimenticios personalizados
-    stockSuplementosAlimento: [], // Stock de suplementos alimenticios
-    suplementosSanidad: [],     // Suplementos inyectables personalizados
-    stockSuplementosSanidad: [], // Stock de suplementos inyectables
+    stockSanidad: {}, preciosSanidad: {},
+    suplementosAlimento: [],
+    suplementosSanidad: [], stockSuplementosSanidad: [],
     precioKG: 9800
 };
-
 function cargarDatos() {
-    try {
-        var saved = localStorage.getItem('ganadero_elite_v3');
-        if (saved) { DB = JSON.parse(saved); console.log('✅ Datos cargados'); return; }
-        var backup = sessionStorage.getItem('ganadero_elite_backup');
-        if (backup) { DB = JSON.parse(backup); save(); return; }
-        console.log('📦 Sin datos previos');
-    } catch(e) {
-        try { var backup = sessionStorage.getItem('ganadero_elite_backup'); if (backup) { DB = JSON.parse(backup); save(); } } catch(e2) {}
-    }
+    try { var s = localStorage.getItem('ganadero_elite_v4'); if (s) { DB = JSON.parse(s); return; } var b = sessionStorage.getItem('ganadero_elite_backup'); if (b) { DB = JSON.parse(b); save(); } } catch(e) {}
 }
-
 function save() {
-    try {
-        var data = JSON.stringify(DB);
-        localStorage.setItem('ganadero_elite_v3', data);
-        sessionStorage.setItem('ganadero_elite_backup', data);
-        localStorage.setItem('ganadero_elite_lastSave', new Date().toLocaleString());
-    } catch(e) {
-        if (e.name === 'QuotaExceededError') {
-            if (DB.aplicaciones && DB.aplicaciones.length > 50) DB.aplicaciones = DB.aplicaciones.slice(-50);
-            DB.animales.forEach(function(a) { if (a.historial && a.historial.length > 10) a.historial = a.historial.slice(-10); });
-            try { localStorage.setItem('ganadero_elite_v3', JSON.stringify(DB)); } catch(e2) {}
-        }
-    }
+    try { var d = JSON.stringify(DB); localStorage.setItem('ganadero_elite_v4', d); sessionStorage.setItem('ganadero_elite_backup', d); localStorage.setItem('ganadero_elite_lastSave', new Date().toLocaleString()); } catch(e) {}
 }
 
 // ==================== 4. CATÁLOGOS ====================
 var ALIMENTOS = ['pasto','salvado','melaza','levadura','bicarb','sal','urea'];
 var IC_ALIMENTOS = { pasto:'fa-seedling', salvado:'fa-wheat-awn', melaza:'fa-droplet', levadura:'fa-flask', bicarb:'fa-cubes', sal:'fa-vial-circle-check', urea:'fa-flask-vial' };
 var NM_ALIMENTOS = { pasto:'Pasto Picado', salvado:'Salvado Trigo', melaza:'Melaza', levadura:'Levadura', bicarb:'Bicarbonato', sal:'Sal Mineral', urea:'UREA' };
-
 var CATALOGO_SANIDAD = [
     { id:'modificador', nombre:'Modificador Orgánico', dosis:50, diasEfecto:90, retiro:0, icono:'fa-flask', color:'#22c55e', tipo:'fijo' },
     { id:'vitaminaA', nombre:'Vitamina ADE', dosis:50, diasEfecto:60, retiro:30, icono:'fa-sun', color:'#fbbf24', tipo:'fijo' },
@@ -105,9 +52,7 @@ var CATALOGO_SANIDAD = [
     { id:'fosforo', nombre:'Fósforo B12', dosis:20, diasEfecto:30, retiro:0, icono:'fa-bone', color:'#a78bfa', tipo:'fijo' },
     { id:'hierro', nombre:'Hierro Dextrano', dosis:100, diasEfecto:30, retiro:0, icono:'fa-droplet', color:'#f87171', tipo:'fijo' }
 ];
-
 function getCatalogoSanidadCompleto() { return CATALOGO_SANIDAD.concat(DB.suplementosSanidad); }
-function getCatalogoAlimentoCompleto() { return DB.suplementosAlimento; }
 
 // ==================== 5. FÓRMULAS ====================
 function getEtapa(pv) {
@@ -117,7 +62,6 @@ function getEtapa(pv) {
     return { nombre:'Madurez', clase:'etapa-madurez', icono:'🦬', rango:'Venta', min:500, max:9999, ureaBloqueada:false, color:'#f87171', siguienteEtapa:'Venta' };
 }
 function getProgresoEtapa(pv, e) { return Math.min(100, Math.max(0, ((pv - e.min) / (e.max - e.min)) * 100)); }
-
 function getDiet(pv) {
     if (pv < 20) return { pasto:0, salvado:0, sal:0, melaza:0, urea:0, levadura:0, bicarb:0 };
     var d = { pasto:pv*0.03, salvado:pv*0.0045, sal:pv*0.2, melaza:0, urea:0, levadura:0, bicarb:0 };
@@ -127,33 +71,22 @@ function getDiet(pv) {
 }
 function getDiasDesde(f) { if (!f) return 999; var p = f.split('/'); if (p.length < 3) return 999; return Math.floor((new Date() - new Date(p[2], p[1]-1, p[0])) / 86400000); }
 function getGMD(h) { return h.length < 2 ? 0 : (h[h.length-1].peso - h[h.length-2].peso) / 30; }
-
 function getCostoDiario(pv) {
     var d = getDiet(pv);
     return (d.pasto||0)*(DB.precios.pasto||0) + (d.salvado||0)*(DB.precios.salvado||0) + ((d.melaza||0)/1000)*(DB.precios.melaza||0) + ((d.levadura||0)/1000)*(DB.precios.levadura||0) + ((d.bicarb||0)/1000)*(DB.precios.bicarb||0) + ((d.sal||0)/1000)*(DB.precios.sal||0) + ((d.urea||0)/1000)*(DB.precios.urea||0);
 }
-
+function getDosisSuplemento(peso, sup) { return (peso * sup.gramosPorKg) / 1000; }
+function getCostoSuplementoDiario(peso, sup) { return getDosisSuplemento(peso, sup) * (sup.precioPorKg || 0); }
 function getCostoSanidadDiario(animalId) {
-    var t = 0; var catalogo = getCatalogoSanidadCompleto();
+    var t = 0; var c = getCatalogoSanidadCompleto();
     for (var i = 0; i < DB.aplicaciones.length; i++) {
         if (DB.aplicaciones[i].animalId === animalId) {
-            var p = catalogo.find(function(x) { return x.id === DB.aplicaciones[i].productoId; });
+            var p = c.find(function(x) { return x.id === DB.aplicaciones[i].productoId; });
             if (p && p.diasEfecto > 0) t += (DB.aplicaciones[i].costo || 0) / p.diasEfecto;
         }
     }
     return t;
 }
-
-function getCostoSuplementosDiario(animalId) {
-    var t = 0;
-    for (var i = 0; i < DB.aplicaciones.length; i++) {
-        if (DB.aplicaciones[i].animalId === animalId && DB.aplicaciones[i].tipo === 'alimento') {
-            t += (DB.aplicaciones[i].costo || 0) / 30; // Distribuir en 30 días
-        }
-    }
-    return t;
-}
-
 function getRendimiento(h) {
     if (h.length < 2) return { nivel:'azul', texto:'Registre más pesajes', icono:'fa-circle-info', cm:0, color:'azul' };
     var act = h[h.length-1].peso, ant = h[h.length-2].peso, cm = ((act-ant)/ant)*100;
@@ -163,17 +96,22 @@ function getRendimiento(h) {
     if (cm >= 2.5) return { nivel:'naranja', texto:'Regular', icono:'fa-triangle-exclamation', cm:cm, color:'naranja' };
     return { nivel:'rojo', texto:'Bajo', icono:'fa-circle-exclamation', cm:cm, color:'rojo' };
 }
+function getCostoTotalSuplementosDiario(peso) {
+    var t = 0;
+    for (var i = 0; i < DB.suplementosAlimento.length; i++) {
+        t += getCostoSuplementoDiario(peso, DB.suplementosAlimento[i]);
+    }
+    return t;
+}
+
 // ==================== 6. NAVEGACIÓN ====================
 document.getElementById('bottomNav').addEventListener('click', function(e) {
     var btn = e.target.closest('button');
     if (!btn || !btn.hasAttribute('data-p')) return;
     goPage(btn.getAttribute('data-p'));
 });
-
 function goPage(p) {
-    ['v-lote','v-insumos','v-sanidad','v-ajustes','v-perfil'].forEach(function(id) {
-        document.getElementById(id).classList.add('hidden');
-    });
+    ['v-lote','v-insumos','v-sanidad','v-ajustes','v-perfil'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
     document.getElementById('v-' + p).classList.remove('hidden');
     var btns = document.querySelectorAll('#bottomNav .bn-btn');
     for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
@@ -197,6 +135,10 @@ function renderLote() {
     for (var i = 0; i < DB.aplicaciones.length; i++) {
         if (DB.aplicaciones[i].tipo === 'sanidad') csTotal += (DB.aplicaciones[i].costo || 0);
         if (DB.aplicaciones[i].tipo === 'alimento') cSuplTotal += (DB.aplicaciones[i].costo || 0);
+    }
+    // Sumar costo diario de suplementos
+    for (var i = 0; i < DB.animales.length; i++) {
+        cSuplTotal += getCostoTotalSuplementosDiario(DB.animales[i].historial[DB.animales[i].historial.length-1].peso) * 30;
     }
 
     for (var i = 0; i < DB.animales.length; i++) {
@@ -258,7 +200,6 @@ function renderLote() {
         '<div class="section-title"><i class="fa-solid fa-layer-group"></i> INVENTARIO</div><div class="grid">' + cards + '</div>';
     document.getElementById('v-lote').innerHTML = html;
 }
-
 function savePKG() { var el = document.getElementById('inpPKG'); if (el) { DB.precioKG = parseFloat(el.value) || 0; save(); renderLote(); showToast('✅ Precio actualizado'); } }
 function toggleAdd() { var m = document.getElementById('addAnimalModal'); m.classList.toggle('hidden'); if (!m.classList.contains('hidden')) document.getElementById('newN').focus(); }
 function closeAddModal() { document.getElementById('addAnimalModal').classList.add('hidden'); }
@@ -269,53 +210,53 @@ function addAnimal() {
     DB.animales.push({ id: Date.now(), nombre: n, historial: [{ fecha: new Date().toLocaleDateString(), peso: p }] });
     save(); closeAddModal(); renderLote(); showToast('✅ ' + n + ' registrado');
 }
-
-// ==================== 8. RENDER INSUMOS ====================
+// ==================== 8. RENDER INSUMOS (UNIFICADO) ====================
 function renderInsumos() {
     var mez = { pasto:0, salvado:0, sal:0, melaza:0, urea:0, levadura:0, bicarb:0 };
     DB.animales.forEach(function(a) { var d = getDiet(a.historial[a.historial.length-1].peso); for (var k in mez) mez[k] += d[k]; });
-    
-    // PRECIOS ALIMENTOS FIJOS
-    var html = '<div class="card"><div style="font-weight:700;margin-bottom:14px;color:var(--accent);"><i class="fa-solid fa-tags"></i> PRECIOS ALIMENTOS (COP/kg)</div>';
+
+    var html = '<div class="card"><div style="font-weight:700;margin-bottom:14px;color:var(--accent);"><i class="fa-solid fa-boxes"></i> ALIMENTOS FIJOS</div>';
+
+    // ALIMENTOS FIJOS - Precio y stock en una sola línea
     for (var i = 0; i < ALIMENTOS.length; i++) {
-        html += '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);"><i class="fa-solid ' + IC_ALIMENTOS[ALIMENTOS[i]] + '"></i><span style="flex:1;font-size:.78rem;">' + NM_ALIMENTOS[ALIMENTOS[i]] + '</span><input id="pr-' + ALIMENTOS[i] + '" type="number" value="' + (DB.precios[ALIMENTOS[i]] || 0) + '" style="width:85px;text-align:right;padding:8px;"></div>';
-    }
-    html += '<button class="btn btn-gold mt12" onclick="savePrecios()"><i class="fa-solid fa-check"></i> GUARDAR PRECIOS</button></div>';
-    
-    // STOCK ALIMENTOS FIJOS
-    html += '<div class="card"><div style="font-weight:700;margin-bottom:14px;color:var(--accent);"><i class="fa-solid fa-boxes"></i> STOCK ALIMENTOS (kg)</div>';
-    for (var j = 0; j < ALIMENTOS.length; j++) {
-        var st = DB.stock[ALIMENTOS[j]] || 0, co = mez[ALIMENTOS[j]] || 0, cr = (ALIMENTOS[j] === 'pasto' || ALIMENTOS[j] === 'salvado') ? co : co/1000;
+        var st = DB.stock[ALIMENTOS[i]] || 0, co = mez[ALIMENTOS[i]] || 0, cr = (ALIMENTOS[i] === 'pasto' || ALIMENTOS[i] === 'salvado') ? co : co/1000;
         var dias = cr > 0 && st > 0 ? st/cr : 999, dCol = dias < 3 ? '#ef4444' : dias < 7 ? '#f59e0b' : '#22c55e';
-        html += '<div class="stock-row"><i class="fa-solid ' + IC_ALIMENTOS[ALIMENTOS[j]] + '"></i><div class="stock-info"><span class="stock-name">' + NM_ALIMENTOS[ALIMENTOS[j]] + '</span><span class="stock-consumo">Consumo: ' + cr.toFixed(1) + ' kg/d</span></div><input id="st-' + ALIMENTOS[j] + '" type="number" value="' + Math.round(st) + '" style="width:80px;text-align:right;padding:8px;" step="1"><span style="font-size:.68rem;font-weight:600;color:' + dCol + ';">' + (dias === 999 ? '--' : Math.round(dias) + 'd') + '</span></div>';
+        html += '<div class="insumo-row"><i class="fa-solid ' + IC_ALIMENTOS[ALIMENTOS[i]] + '"></i><div class="insumo-info"><span class="insumo-nombre">' + NM_ALIMENTOS[ALIMENTOS[i]] + '</span><span class="insumo-detalle">$' + fm(DB.precios[ALIMENTOS[i]] || 0) + '/kg · Consumo: ' + cr.toFixed(1) + ' kg/d · Stock: ' + Math.round(st) + 'kg · <b style="color:' + dCol + '">' + (dias === 999 ? '--' : Math.round(dias) + 'd') + '</b></span></div>' +
+            '<div class="insumo-inputs"><input id="pr-' + ALIMENTOS[i] + '" type="number" value="' + (DB.precios[ALIMENTOS[i]] || 0) + '" placeholder="$/kg"><input id="st-' + ALIMENTOS[i] + '" type="number" value="' + Math.round(st) + '" placeholder="kg"></div></div>';
     }
-    html += '<button class="btn btn-gold mt12" onclick="saveStock()"><i class="fa-solid fa-check"></i> GUARDAR STOCK</button></div>';
-    
-    // SUPLEMENTOS ALIMENTICIOS
-    html += '<div class="card"><div style="font-weight:700;margin-bottom:14px;color:var(--accent);"><i class="fa-solid fa-flask"></i> SUPLEMENTOS ALIMENTICIOS</div>';
+    html += '<button class="btn btn-gold mt12" onclick="saveAlimentos()"><i class="fa-solid fa-check"></i> GUARDAR ALIMENTOS</button></div>';
+
+    // SUPLEMENTOS PERSONALIZADOS
+    html += '<div class="card"><div style="font-weight:700;margin-bottom:14px;color:var(--accent);"><i class="fa-solid fa-flask"></i> SUPLEMENTOS PERSONALIZADOS (g/kg)</div>';
     for (var s = 0; s < DB.suplementosAlimento.length; s++) {
         var sup = DB.suplementosAlimento[s];
-        var stockSup = DB.stockSuplementosAlimento.find(function(x) { return x.id === sup.id; });
-        var cantidad = stockSup ? stockSup.cantidad : 0;
-        html += '<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><i class="fa-solid ' + sup.icono + '" style="color:' + sup.color + ';font-size:1.2rem;"></i><div style="flex:1;"><span style="font-size:.78rem;font-weight:600;">' + sup.nombre + '</span><span style="font-size:.6rem;color:var(--muted);display:block;">Stock: <b>' + fm(cantidad) + ' ' + sup.unidad + '</b> · $<b>' + fm(sup.precioUnitario || 0) + '/' + sup.unidad + '</b></span></div></div>' +
-            '<div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;">➕ Comprar:</div><div style="display:flex;gap:6px;align-items:center;">' +
-            '<input id="compraCant-' + sup.id + '" type="number" placeholder="' + sup.unidad + '" style="flex:1;padding:8px 10px;font-size:.7rem;min-height:36px;">' +
-            '<input id="compraCosto-' + sup.id + '" type="number" placeholder="Costo total ($)" style="flex:1;padding:8px 10px;font-size:.7rem;min-height:36px;">' +
-            '<button class="btn btn-green" onclick="agregarCompraAlimento(\'' + sup.id + '\')" style="width:auto;padding:8px 12px;font-size:.65rem;"><i class="fa-solid fa-cart-shopping"></i></button></div></div>';
+        var stockKg = sup.stock || 0;
+        // Ejemplo de dosis para un animal de 160 kg
+        var dosisEjemplo = getDosisSuplemento(160, sup);
+        html += '<div class="sup-card"><div class="sup-card-header"><span class="sup-nombre"><i class="fa-solid ' + (sup.icono || 'fa-flask') + '" style="color:' + (sup.color || '#a78bfa') + ';"></i> ' + sup.nombre + '</span>' +
+            '<div class="sup-card-actions"><button onclick="editarSuplementoAlimento(\'' + sup.id + '\')" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="eliminarSuplementoAlimento(\'' + sup.id + '\')" title="Eliminar"><i class="fa-solid fa-trash"></i></button></div></div>' +
+            '<div class="sup-card-body"><span>📐 ' + sup.gramosPorKg + ' g/kg</span><span>💰 $' + fm(sup.precioPorKg || 0) + '/kg</span><span>📦 Stock: ' + fm(stockKg) + ' kg</span><span>📋 Ej: 160kg → ' + dosisEjemplo.toFixed(2) + ' kg/d</span></div>' +
+            '<div style="display:flex;gap:6px;margin-top:8px;"><input id="compraCantSup-' + sup.id + '" type="number" placeholder="kg a comprar" style="flex:1;padding:8px;font-size:.7rem;min-height:32px;"><input id="compraCostoSup-' + sup.id + '" type="number" placeholder="Costo total ($)" style="flex:1;padding:8px;font-size:.7rem;min-height:32px;"><button class="btn btn-green btn-sm" onclick="comprarSuplementoAlimento(\'' + sup.id + '\')" style="padding:6px 10px;"><i class="fa-solid fa-cart-shopping"></i></button></div></div>';
     }
-    html += '<button class="btn btn-purple mt12" onclick="openAgregarSuplementoAlimento()"><i class="fa-solid fa-plus"></i> AGREGAR SUPLEMENTO ALIMENTICIO</button></div>';
-    
+    html += '<button class="btn btn-purple mt12" onclick="openAgregarSuplementoAlimento()"><i class="fa-solid fa-plus"></i> AGREGAR SUPLEMENTO</button></div>';
+
     document.getElementById('v-insumos').innerHTML = html;
 }
 
-function savePrecios() { for (var i = 0; i < ALIMENTOS.length; i++) { var el = document.getElementById('pr-' + ALIMENTOS[i]); if (el) DB.precios[ALIMENTOS[i]] = parseFloat(el.value) || 0; } save(); showToast('✅ Precios actualizados'); }
-function saveStock() { for (var i = 0; i < ALIMENTOS.length; i++) { var el = document.getElementById('st-' + ALIMENTOS[i]); if (el) DB.stock[ALIMENTOS[i]] = parseFloat(el.value) || 0; } save(); showToast('✅ Stock actualizado'); }
+function saveAlimentos() {
+    for (var i = 0; i < ALIMENTOS.length; i++) {
+        var pel = document.getElementById('pr-' + ALIMENTOS[i]), sel = document.getElementById('st-' + ALIMENTOS[i]);
+        if (pel) DB.precios[ALIMENTOS[i]] = parseFloat(pel.value) || 0;
+        if (sel) DB.stock[ALIMENTOS[i]] = parseFloat(sel.value) || 0;
+    }
+    save(); showToast('✅ Alimentos guardados');
+}
 
 function openAgregarSuplementoAlimento() {
-    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">➕ NUEVO SUPLEMENTO ALIMENTICIO</div><div class="flex-col gap10">' +
+    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">➕ NUEVO SUPLEMENTO (g/kg)</div><div class="flex-col gap10">' +
         '<input id="supAlimNombre" type="text" placeholder="Nombre del suplemento">' +
-        '<select id="supAlimUnidad"><option value="kg">Kilogramos (kg)</option><option value="g">Gramos (g)</option></select>' +
-        '<input id="supAlimDiasEfecto" type="number" placeholder="Días de efecto (30 por defecto)" step="1" value="30">' +
+        '<input id="supAlimGramos" type="number" placeholder="Gramos por kg de peso vivo (g/kg)" step="1" value="50">' +
+        '<input id="supAlimPrecio" type="number" placeholder="Precio por kg ($)" step="1">' +
         '<button class="btn btn-purple mt8" onclick="agregarSuplementoAlimento()"><i class="fa-solid fa-check"></i> AGREGAR</button>' +
         '<button class="btn btn-gray" onclick="document.querySelector(\'.modal-overlay\').remove()">CANCELAR</button></div>';
     showModal(html);
@@ -323,40 +264,62 @@ function openAgregarSuplementoAlimento() {
 
 function agregarSuplementoAlimento() {
     var n = document.getElementById('supAlimNombre').value.trim();
-    var unidad = document.getElementById('supAlimUnidad').value;
-    var diasEfecto = parseInt(document.getElementById('supAlimDiasEfecto').value) || 30;
+    var g = parseInt(document.getElementById('supAlimGramos').value) || 50;
+    var precio = parseFloat(document.getElementById('supAlimPrecio').value) || 0;
     if (!n) { alert('⚠️ Ingrese un nombre'); return; }
     var id = 'supAlim_' + Date.now();
-    DB.suplementosAlimento.push({ id: id, nombre: n, unidad: unidad, diasEfecto: diasEfecto, icono: 'fa-flask', color: '#a78bfa', tipo: 'alimento' });
+    DB.suplementosAlimento.push({ id: id, nombre: n, gramosPorKg: g, precioPorKg: precio, stock: 0, icono: 'fa-flask', color: '#a78bfa' });
     save(); document.querySelector('.modal-overlay').remove(); renderInsumos(); showToast('✅ Suplemento agregado');
 }
 
-function agregarCompraAlimento(supId) {
-    var cantEl = document.getElementById('compraCant-' + supId), costoEl = document.getElementById('compraCosto-' + supId);
-    if (!cantEl || !costoEl) return;
-    var cantidad = parseFloat(cantEl.value), costo = parseFloat(costoEl.value);
-    if (isNaN(cantidad) || cantidad <= 0) { alert('⚠️ Cantidad válida'); return; }
-    if (isNaN(costo) || costo <= 0) { alert('⚠️ Costo válido'); return; }
-    var sup = DB.suplementosAlimento.find(function(s) { return s.id === supId; });
-    if (!sup) return;
-    sup.precioUnitario = costo / cantidad;
-    var stockExistente = DB.stockSuplementosAlimento.find(function(s) { return s.id === supId; });
-    if (stockExistente) { stockExistente.cantidad = (stockExistente.cantidad || 0) + cantidad; }
-    else { DB.stockSuplementosAlimento.push({ id: supId, cantidad: cantidad }); }
-    save(); cantEl.value = ''; costoEl.value = ''; renderInsumos();
-    showToast('✅ Compra registrada: $' + fm(sup.precioUnitario) + '/' + sup.unidad);
+function editarSuplementoAlimento(id) {
+    var sup = DB.suplementosAlimento.find(function(s) { return s.id === id; }); if (!sup) return;
+    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">✏️ EDITAR ' + sup.nombre + '</div><div class="flex-col gap10">' +
+        '<input id="editSupNombre" type="text" value="' + sup.nombre + '">' +
+        '<input id="editSupGramos" type="number" value="' + sup.gramosPorKg + '" placeholder="g/kg">' +
+        '<input id="editSupPrecio" type="number" value="' + (sup.precioPorKg || 0) + '" placeholder="Precio/kg">' +
+        '<button class="btn btn-gold mt8" onclick="guardarEdicionSuplemento(\'' + id + '\')"><i class="fa-solid fa-check"></i> GUARDAR</button>' +
+        '<button class="btn btn-gray" onclick="document.querySelector(\'.modal-overlay\').remove()">CANCELAR</button></div>';
+    showModal(html);
 }
+
+function guardarEdicionSuplemento(id) {
+    var sup = DB.suplementosAlimento.find(function(s) { return s.id === id; }); if (!sup) return;
+    sup.nombre = document.getElementById('editSupNombre').value.trim();
+    sup.gramosPorKg = parseInt(document.getElementById('editSupGramos').value) || 50;
+    sup.precioPorKg = parseFloat(document.getElementById('editSupPrecio').value) || 0;
+    save(); document.querySelector('.modal-overlay').remove(); renderInsumos(); showToast('✅ Suplemento actualizado');
+}
+
+function eliminarSuplementoAlimento(id) {
+    if (confirm('⚠️ ¿Eliminar este suplemento?')) {
+        DB.suplementosAlimento = DB.suplementosAlimento.filter(function(s) { return s.id !== id; });
+        save(); renderInsumos(); showToast('✅ Eliminado');
+    }
+}
+
+function comprarSuplementoAlimento(id) {
+    var cantEl = document.getElementById('compraCantSup-' + id), costoEl = document.getElementById('compraCostoSup-' + id);
+    if (!cantEl || !costoEl) return;
+    var kg = parseFloat(cantEl.value), costo = parseFloat(costoEl.value);
+    if (isNaN(kg) || kg <= 0) { alert('⚠️ Cantidad válida'); return; }
+    if (isNaN(costo) || costo <= 0) { alert('⚠️ Costo válido'); return; }
+    var sup = DB.suplementosAlimento.find(function(s) { return s.id === id; }); if (!sup) return;
+    sup.stock = (sup.stock || 0) + kg;
+    // Actualizar precio si es la primera compra o si el usuario quiere
+    if (!sup.precioPorKg || sup.precioPorKg === 0) sup.precioPorKg = costo / kg;
+    save(); cantEl.value = ''; costoEl.value = ''; renderInsumos();
+    showToast('✅ Stock actualizado: +' + fm(kg) + ' kg ($' + fm(costo/kg) + '/kg)');
+}
+
 // ==================== 9. RENDER SANIDAD ====================
 function renderSanidad() {
     var catalogo = getCatalogoSanidadCompleto();
     var html = '<div class="card"><div style="font-weight:700;font-size:.8rem;margin-bottom:12px;color:var(--accent);"><i class="fa-solid fa-syringe"></i> INVENTARIO SANIDAD</div>';
     for (var i = 0; i < catalogo.length; i++) {
         var prod = catalogo[i];
-        var stock = DB.stockSanidad[prod.id] || 0;
-        var supStock = DB.stockSuplementosSanidad.find(function(s) { return s.id === prod.id; });
-        if (supStock) stock = supStock.cantidad || 0;
-        var precioML = DB.preciosSanidad[prod.id] || 0;
-        if (supStock) precioML = supStock.precioML || 0;
+        var stock = prod.tipo === 'fijo' ? (DB.stockSanidad[prod.id] || 0) : (prod.stock || 0);
+        var precioML = prod.tipo === 'fijo' ? (DB.preciosSanidad[prod.id] || 0) : (prod.precioML || 0);
         html += '<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.03);"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><i class="fa-solid ' + prod.icono + '" style="color:' + prod.color + ';font-size:1.2rem;width:22px;"></i><div style="flex:1;"><span style="font-size:.78rem;font-weight:600;">' + prod.nombre + '</span><span style="font-size:.6rem;color:var(--muted);display:block;">Stock: <b>' + fm(stock) + ' ml</b> · $<b>' + fm(precioML) + '/ml</b> · Efecto: ' + prod.diasEfecto + 'd · Venta: ' + prod.retiro + 'd</span></div></div>' +
             '<div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;">➕ Comprar:</div><div style="display:flex;gap:6px;align-items:center;">' +
             '<input id="compraML-' + prod.id + '" type="number" placeholder="ml" style="flex:1;padding:8px 10px;font-size:.7rem;min-height:36px;">' +
@@ -368,7 +331,7 @@ function renderSanidad() {
 }
 
 function openAgregarSuplementoSanidad() {
-    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">💉 NUEVO SUPLEMENTO INYECTABLE</div><div class="flex-col gap10">' +
+    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">💉 NUEVO INYECTABLE</div><div class="flex-col gap10">' +
         '<input id="supSanNombre" type="text" placeholder="Nombre del producto">' +
         '<input id="supSanDosis" type="number" placeholder="Dosis (ml por kg)" step="1" value="50">' +
         '<input id="supSanDiasEfecto" type="number" placeholder="Días de efecto" step="1" value="30">' +
@@ -385,8 +348,8 @@ function agregarSuplementoSanidad() {
     var retiro = parseInt(document.getElementById('supSanRetiro').value) || 0;
     if (!n) { alert('⚠️ Ingrese un nombre'); return; }
     var id = 'supSan_' + Date.now();
-    DB.suplementosSanidad.push({ id: id, nombre: n, dosis: dosis, diasEfecto: diasEfecto, retiro: retiro, icono: 'fa-syringe', color: '#a78bfa', tipo: 'personalizado' });
-    save(); document.querySelector('.modal-overlay').remove(); renderSanidad(); showToast('✅ Suplemento agregado');
+    DB.suplementosSanidad.push({ id: id, nombre: n, dosis: dosis, diasEfecto: diasEfecto, retiro: retiro, stock: 0, precioML: 0, icono: 'fa-syringe', color: '#a78bfa', tipo: 'personalizado' });
+    save(); document.querySelector('.modal-overlay').remove(); renderSanidad(); showToast('✅ Agregado');
 }
 
 function agregarCompraSanidad(prodId) {
@@ -395,8 +358,8 @@ function agregarCompraSanidad(prodId) {
     var ml = parseFloat(mlEl.value), costo = parseFloat(costoEl.value);
     if (isNaN(ml) || ml <= 0) { alert('⚠️ Cantidad válida'); return; }
     if (isNaN(costo) || costo <= 0) { alert('⚠️ Costo válido'); return; }
-    var supStock = DB.stockSuplementosSanidad.find(function(s) { return s.id === prodId; });
-    if (supStock) { supStock.cantidad = (supStock.cantidad || 0) + ml; supStock.precioML = costo / ml; }
+    var supPers = DB.suplementosSanidad.find(function(s) { return s.id === prodId; });
+    if (supPers) { supPers.stock = (supPers.stock || 0) + ml; supPers.precioML = costo / ml; }
     else { DB.stockSanidad[prodId] = (DB.stockSanidad[prodId] || 0) + ml; DB.preciosSanidad[prodId] = costo / ml; }
     save(); mlEl.value = ''; costoEl.value = ''; renderSanidad();
     showToast('✅ Compra registrada ($' + fm(costo/ml) + '/ml)');
@@ -405,40 +368,27 @@ function agregarCompraSanidad(prodId) {
 // ==================== 10. RENDER AJUSTES ====================
 function renderAjustes() {
     var html = '<div class="card config-section"><h3><i class="fa-solid fa-database"></i> RESPALDO</h3>' +
-        '<button class="btn btn-gold" onclick="exportarDatos()"><i class="fa-solid fa-download"></i> EXPORTAR DATOS</button>' +
-        '<button class="btn btn-gray" onclick="importarDatos()"><i class="fa-solid fa-upload"></i> IMPORTAR DATOS</button></div>' +
+        '<button class="btn btn-gold" onclick="exportarDatos()"><i class="fa-solid fa-download"></i> EXPORTAR</button>' +
+        '<button class="btn btn-gray" onclick="importarDatos()"><i class="fa-solid fa-upload"></i> IMPORTAR</button></div>' +
         '<div class="card config-section"><h3><i class="fa-solid fa-info-circle"></i> INFORMACIÓN</h3>' +
-        '<p style="font-size:.7rem;color:var(--muted);">GANADERO ÉLITE v2.1</p>' +
-        '<p style="font-size:.6rem;color:var(--muted);">Último guardado: ' + (localStorage.getItem('ganadero_elite_lastSave') || 'Nunca') + '</p></div>';
+        '<p style="font-size:.7rem;color:var(--muted);">GANADERO ÉLITE v2.2</p>' +
+        '<p style="font-size:.6rem;color:var(--muted);">Suplementos con g/kg · Nutrición Inteligente</p>' +
+        '<p style="font-size:.6rem;color:var(--muted);">Guardado: ' + (localStorage.getItem('ganadero_elite_lastSave') || 'Nunca') + '</p></div>';
     document.getElementById('v-ajustes').innerHTML = html;
 }
-
-function exportarDatos() {
-    var blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
-    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'ganadero-elite-respaldo.json'; a.click(); showToast('✅ Respaldo descargado');
-}
-function importarDatos() {
-    var input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-    input.onchange = function(e) {
-        var reader = new FileReader();
-        reader.onload = function(e) { try { DB = JSON.parse(e.target.result); save(); renderLote(); showToast('✅ Importado'); } catch(err) { alert('❌ Error'); } };
-        reader.readAsText(e.target.files[0]);
-    };
-    input.click();
-}
-
+function exportarDatos() { var b = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'ganadero-elite-respaldo.json'; a.click(); showToast('✅ Exportado'); }
+function importarDatos() { var i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = function(e) { var r = new FileReader(); r.onload = function(e) { try { DB = JSON.parse(e.target.result); save(); renderLote(); showToast('✅ Importado'); } catch(err) { alert('❌ Error'); } }; r.readAsText(e.target.files[0]); }; i.click(); }
 // ==================== 11. PERFIL DEL ANIMAL ====================
 function showProfile(id) {
     var a = DB.animales.find(function(x) { return x.id === id; }); if (!a) return;
     var p = a.historial[a.historial.length-1].peso, etapa = getEtapa(p);
     var r = getRendimiento(a.historial), gmd = getGMD(a.historial), cd = getCostoDiario(p);
     var csd = getCostoSanidadDiario(id);
-    var cspld = getCostoSuplementosDiario(id);
+    var cspld = getCostoTotalSuplementosDiario(p);
     var cst = 0;
     for (var i = 0; i < DB.aplicaciones.length; i++) { if (DB.aplicaciones[i].animalId === id) cst += (DB.aplicaciones[i].costo || 0); }
     var ckp = gmd > 0 ? (cd + csd + cspld) / gmd : 999999;
-    var ingM = gmd * 30 * DB.precioKG, gan = ingM - (cd * 30) - (cst / 12);
+    var ingM = gmd * 30 * DB.precioKG, gan = ingM - (cd * 30) - (cst / 12) - (cspld * 30);
     var proy30 = p + (gmd * 30), proy60 = p + (gmd * 60), proy90 = p + (gmd * 90), valorActual = p * DB.precioKG;
     var diasUltimo = getDiasDesde(a.historial[a.historial.length-1].fecha);
 
@@ -447,12 +397,10 @@ function showProfile(id) {
     if (apps.length > 0) {
         appsHTML = '<div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> APLICACIONES RECIENTES</div>';
         for (var ap = 0; ap < apps.length; ap++) {
-            var icono = 'fa-circle'; var color = '#fff';
-            if (apps[ap].tipo === 'sanidad') {
-                var prod = getCatalogoSanidadCompleto().find(function(p2) { return p2.id === apps[ap].productoId; });
-                if (prod) { icono = prod.icono; color = prod.color; }
-            } else { icono = 'fa-flask'; color = '#a78bfa'; }
-            appsHTML += '<div class="aplicacion-item"><span><i class="fa-solid ' + icono + '" style="color:' + color + ';"></i> ' + apps[ap].producto + '</span><span style="font-size:.65rem;">' + apps[ap].cantidad + ' ' + (apps[ap].unidad || 'ml') + ' · $' + fm(apps[ap].costo || 0) + ' · ' + apps[ap].fecha + '</span></div>';
+            var icono = 'fa-circle', color = '#fff';
+            if (apps[ap].tipo === 'sanidad') { var prod = getCatalogoSanidadCompleto().find(function(p2) { return p2.id === apps[ap].productoId; }); if (prod) { icono = prod.icono; color = prod.color; } }
+            else { icono = 'fa-flask'; color = '#a78bfa'; }
+            appsHTML += '<div class="aplicacion-item"><span><i class="fa-solid ' + icono + '" style="color:' + color + ';"></i> ' + apps[ap].producto + '</span><span style="font-size:.65rem;">' + (apps[ap].cantidad || apps[ap].ml || '') + ' ' + (apps[ap].unidad || 'ml') + ' · $' + fm(apps[ap].costo || 0) + ' · ' + apps[ap].fecha + '</span></div>';
         }
     }
 
@@ -460,19 +408,28 @@ function showProfile(id) {
     for (var i = 0; i < rev.length; i++) {
         var h = rev[i], ch = '', diasInfo = '';
         if (i === 0) diasInfo = '<span style="font-size:.6rem;color:var(--muted);margin-left:4px;">hace ' + getDiasDesde(h.fecha) + ' d</span>';
-        if (i < a.historial.length-1) {
-            var ant = a.historial[a.historial.length-2-i].peso, dif = h.peso - ant;
-            var cls = dif >= 0 ? 'badge-up' : 'badge-down', sig = dif >= 0 ? '+' : '';
-            ch = '<span class="badge ' + cls + '">' + sig + ((dif/ant)*100).toFixed(1) + '%</span>';
-        }
+        if (i < a.historial.length-1) { var ant = a.historial[a.historial.length-2-i].peso, dif = h.peso - ant; var cls = dif >= 0 ? 'badge-up' : 'badge-down', sig = dif >= 0 ? '+' : ''; ch = '<span class="badge ' + cls + '">' + sig + ((dif/ant)*100).toFixed(1) + '%</span>'; }
         hist += '<div class="hist-item"><span><i class="fa-regular fa-calendar"></i> ' + h.fecha + diasInfo + '</span><div><span class="row-val">' + fm(h.peso) + ' kg</span>' + ch + '</div></div>';
     }
 
+    // DIETA CON ALIMENTOS FIJOS + SUPLEMENTOS DINÁMICOS
     var dietaHTML = '';
     for (var x = 0; x < ALIMENTOS.length; x++) {
-        var d = getDiet(p);
-        var bl = (ALIMENTOS[x] === 'urea' || ALIMENTOS[x] === 'melaza') && etapa.ureaBloqueada;
-        dietaHTML += '<div class="row"><span class="row-label"><i class="fa-solid ' + IC_ALIMENTOS[ALIMENTOS[x]] + '"></i> ' + NM_ALIMENTOS[ALIMENTOS[x]] + '</span><span class="row-val" style="' + (bl ? 'color:#6b7280;text-decoration:line-through' : '') + '">' + (bl ? '0 g (🔒)' : (ALIMENTOS[x] === 'pasto' || ALIMENTOS[x] === 'salvado' ? d[ALIMENTOS[x]].toFixed(1) + ' kg' : Math.round(d[ALIMENTOS[x]]) + ' g')) + '</span></div>';
+        var d = getDiet(p); var bl = (ALIMENTOS[x] === 'urea' || ALIMENTOS[x] === 'melaza') && etapa.ureaBloqueada;
+        var cant = (ALIMENTOS[x] === 'pasto' || ALIMENTOS[x] === 'salvado') ? d[ALIMENTOS[x]].toFixed(1) + ' kg' : Math.round(d[ALIMENTOS[x]]) + ' g';
+        var costo = (d[ALIMENTOS[x]] || 0) * (DB.precios[ALIMENTOS[x]] || 0);
+        if (ALIMENTOS[x] !== 'pasto' && ALIMENTOS[x] !== 'salvado') costo = ((d[ALIMENTOS[x]] || 0) / 1000) * (DB.precios[ALIMENTOS[x]] || 0);
+        dietaHTML += '<div class="row"><span class="row-label"><i class="fa-solid ' + IC_ALIMENTOS[ALIMENTOS[x]] + '"></i> ' + NM_ALIMENTOS[ALIMENTOS[x]] + '</span><span class="row-val" style="' + (bl ? 'color:#6b7280;text-decoration:line-through' : '') + '">' + (bl ? '0 g (🔒)' : cant + ' · $' + fm(costo)) + '</span></div>';
+    }
+    // SUPLEMENTOS PERSONALIZADOS
+    if (DB.suplementosAlimento.length > 0) {
+        dietaHTML += '<div style="font-size:.65rem;color:var(--accent);margin-top:8px;font-weight:600;">SUPLEMENTOS (g/kg)</div>';
+        for (var s = 0; s < DB.suplementosAlimento.length; s++) {
+            var sup = DB.suplementosAlimento[s];
+            var dosis = getDosisSuplemento(p, sup);
+            var costoDosis = dosis * (sup.precioPorKg || 0);
+            dietaHTML += '<div class="row"><span class="row-label"><i class="fa-solid ' + (sup.icono || 'fa-flask') + '" style="color:' + (sup.color || '#a78bfa') + ';"></i> ' + sup.nombre + ' <span style="font-size:.6rem;color:var(--muted);">(' + sup.gramosPorKg + ' g/kg)</span></span><span class="row-val">' + dosis.toFixed(2) + ' kg · $' + fm(costoDosis) + '</span></div>';
+        }
     }
 
     document.getElementById('v-lote').classList.add('hidden');
@@ -482,9 +439,8 @@ function showProfile(id) {
     document.getElementById('v-perfil').classList.remove('hidden');
     document.getElementById('bottomNav').style.display = 'none';
 
-    var html = '<div class="card"><div class="profile-header"><div><div class="profile-name">' + a.nombre + ' ' + etapa.icono + '</div><div class="profile-sub">' + etapa.rango + ' · ' + etapa.nombre + '</div></div>' +
+    var html = '<div class="card"><div class="profile-header"><div><div class="profile-name">' + a.nombre + ' ' + etapa.icono + '</div><div class="profile-sub">' + etapa.rango + ' · ' + etapa.nombre + ' · ' + fm(p) + ' kg</div></div>' +
         '<div style="display:flex;gap:6px;"><button class="btn btn-purple btn-sm" onclick="openAplicarSanidad(' + id + ')"><i class="fa-solid fa-syringe"></i></button>' +
-        '<button class="btn btn-green btn-sm" onclick="openAgregarSuplementoAnimal(' + id + ')"><i class="fa-solid fa-flask"></i></button>' +
         '<button class="btn btn-gray btn-sm" onclick="deleteAnimal(' + id + ')" style="background:rgba(255,0,0,.06);color:#ef4444;"><i class="fa-solid fa-trash-can"></i></button></div></div>' +
         '<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:4px;"><span>Progreso</span><span>Faltan ' + fm(etapa.max - p) + ' kg para ' + etapa.siguienteEtapa + '</span></div>' +
         '<div class="progress"><div class="progress-fill" style="width:' + getProgresoEtapa(p, etapa) + '%;background:' + etapa.color + ';"></div></div></div>' +
@@ -504,7 +460,7 @@ function showProfile(id) {
         '<div class="row"><span class="row-label"><i class="fa-solid fa-calculator"></i> Costo por kilo</span><span class="row-val" style="color:' + (ckp < DB.precioKG ? '#22c55e' : '#ef4444') + '">$ ' + fm(ckp) + '/kg</span></div>' +
         '<div class="row"><span class="row-label"><i class="fa-solid fa-sack-dollar"></i> Ganancia neta/mes</span><span class="row-val" style="color:' + (gan >= 0 ? '#22c55e' : '#ef4444') + '">$ ' + fm(gan) + '</span></div></div>' +
         appsHTML + '<div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIAL PESAJES</div>' + hist +
-        '<div class="section-title"><i class="fa-solid fa-mortar-pestle"></i> DIETA</div>' + dietaHTML +
+        '<div class="section-title"><i class="fa-solid fa-mortar-pestle"></i> DIETA DIARIA</div>' + dietaHTML +
         '<div class="flex-col gap10 mt20 pt12 bt"><button class="btn btn-gold" onclick="updateWeight(' + id + ')"><i class="fa-solid fa-gauge-high"></i> REGISTRAR PESAJE</button></div></div>';
 
     document.getElementById('v-perfil').innerHTML = html;
@@ -512,21 +468,14 @@ function showProfile(id) {
     var btnBack = document.createElement('button'); btnBack.className = 'btn-back-float'; btnBack.id = 'btnBackFloat';
     btnBack.innerHTML = '<i class="fa-solid fa-arrow-left"></i>'; btnBack.onclick = closeProfile;
     document.body.appendChild(btnBack);
-    window.scrollTo(0, 0);
-    save();
+    window.scrollTo(0, 0); save();
 }
 
-function updateWeight(id) {
-    var p = prompt('⚖️ Nuevo pesaje (kg):'); if (!p) return;
-    p = parseFloat(p); if (isNaN(p) || p < 20 || p > 2000) { alert('⚠️ Peso 20-2000 kg'); return; }
-    var a = DB.animales.find(function(x) { return x.id === id; }); if (!a) return;
-    a.historial.push({ fecha: new Date().toLocaleDateString(), peso: p }); save(); showProfile(id);
-}
+function updateWeight(id) { var p = prompt('⚖️ Nuevo pesaje (kg):'); if (!p) return; p = parseFloat(p); if (isNaN(p) || p < 20 || p > 2000) { alert('⚠️ Peso 20-2000 kg'); return; } var a = DB.animales.find(function(x) { return x.id === id; }); if (!a) return; a.historial.push({ fecha: new Date().toLocaleDateString(), peso: p }); save(); showProfile(id); }
 function deleteAnimal(id) { if (confirm('⚠️ ¿Eliminar?')) { DB.animales = DB.animales.filter(function(x) { return x.id !== id; }); save(); closeProfile(); } }
 function closeProfile() { var btn = document.getElementById('btnBackFloat'); if (btn) btn.remove(); document.getElementById('v-perfil').classList.add('hidden'); document.getElementById('bottomNav').style.display = 'flex'; renderLote(); save(); }
-// ==================== 12. APLICAR SANIDAD Y SUPLEMENTOS AL ANIMAL ====================
 
-/** Abre modal para aplicar producto de sanidad al animal */
+// ==================== 12. APLICAR SANIDAD ====================
 function openAplicarSanidad(animalId) {
     var a = DB.animales.find(function(x) { return x.id === animalId; }); if (!a) return;
     var peso = a.historial[a.historial.length-1].peso;
@@ -541,112 +490,19 @@ function openAplicarSanidad(animalId) {
         '<button class="btn btn-gray" onclick="document.querySelector(\'.modal-overlay\').remove()">CANCELAR</button></div>';
     showModal(html); setTimeout(function() { calcularDosisModal(peso); }, 100);
 }
-
-function calcularDosisModal(peso) {
-    var sel = document.getElementById('aplProducto'), info = document.getElementById('dosisInfo');
-    if (!sel || !info) return;
-    var catalogo = getCatalogoSanidadCompleto();
-    var prod = catalogo.find(function(p) { return p.id === sel.value; });
-    if (prod) info.innerHTML = '📋 Dosis recomendada: <b>' + (peso / prod.dosis).toFixed(1) + ' ml</b> (1 ml/' + prod.dosis + ' kg)';
-}
-
+function calcularDosisModal(peso) { var sel = document.getElementById('aplProducto'), info = document.getElementById('dosisInfo'); if (!sel || !info) return; var catalogo = getCatalogoSanidadCompleto(); var prod = catalogo.find(function(p) { return p.id === sel.value; }); if (prod) info.innerHTML = '📋 Dosis recomendada: <b>' + (peso / prod.dosis).toFixed(1) + ' ml</b> (1 ml/' + prod.dosis + ' kg)'; }
 function aplicarProductoSanidad(animalId) {
-    var sel = document.getElementById('aplProducto'), mlInput = document.getElementById('aplML');
-    if (!sel || !mlInput) return;
-    var prodId = sel.value, ml = parseFloat(mlInput.value);
-    if (isNaN(ml) || ml <= 0) { alert('⚠️ Ingrese ml válidos'); return; }
-    var catalogo = getCatalogoSanidadCompleto();
-    var prod = catalogo.find(function(p) { return p.id === prodId; });
-    var a = DB.animales.find(function(x) { return x.id === animalId; });
-    if (!prod || !a) return;
-    
-    var precioML = DB.preciosSanidad[prodId] || 0;
-    var supStock = DB.stockSuplementosSanidad.find(function(s) { return s.id === prodId; });
-    if (supStock) precioML = supStock.precioML || 0;
+    var sel = document.getElementById('aplProducto'), mlInput = document.getElementById('aplML'); if (!sel || !mlInput) return;
+    var prodId = sel.value, ml = parseFloat(mlInput.value); if (isNaN(ml) || ml <= 0) { alert('⚠️ Ingrese ml válidos'); return; }
+    var catalogo = getCatalogoSanidadCompleto(); var prod = catalogo.find(function(p) { return p.id === prodId; });
+    var a = DB.animales.find(function(x) { return x.id === animalId; }); if (!prod || !a) return;
+    var precioML = prod.tipo === 'fijo' ? (DB.preciosSanidad[prodId] || 0) : (prod.precioML || 0);
     var costoTotal = precioML * ml;
-    
     DB.aplicaciones.push({ animalId: animalId, productoId: prodId, producto: prod.nombre, cantidad: ml, unidad: 'ml', costo: costoTotal, fecha: new Date().toLocaleDateString(), tipo: 'sanidad' });
-    if (supStock) { supStock.cantidad = Math.max(0, (supStock.cantidad || 0) - ml); }
-    else { DB.stockSanidad[prodId] = Math.max(0, (DB.stockSanidad[prodId] || 0) - ml); }
+    if (prod.tipo === 'fijo') { DB.stockSanidad[prodId] = Math.max(0, (DB.stockSanidad[prodId] || 0) - ml); }
+    else { prod.stock = Math.max(0, (prod.stock || 0) - ml); }
     save(); document.querySelector('.modal-overlay').remove();
     showToast('✅ ' + prod.nombre + ': ' + ml + ' ml ($' + fm(costoTotal) + ')'); showProfile(animalId);
-}
-
-/** Abre modal para agregar suplemento alimenticio al animal */
-function openAgregarSuplementoAnimal(animalId) {
-    var a = DB.animales.find(function(x) { return x.id === animalId; }); if (!a) return;
-    if (DB.suplementosAlimento.length === 0) { showToast('⚠️ No hay suplementos alimenticios. Agréguelos en Insumos.'); return; }
-    var supOptions = '';
-    for (var i = 0; i < DB.suplementosAlimento.length; i++) {
-        supOptions += '<option value="' + DB.suplementosAlimento[i].id + '">' + DB.suplementosAlimento[i].nombre + '</option>';
-    }
-    var html = '<div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--accent);">➕ AGREGAR SUPLEMENTO A ' + a.nombre + '</div><div class="flex-col gap10">' +
-        '<select id="supAnimalProd" onchange="actualizarUnidadesSupAnimal()">' + supOptions + '</select>' +
-        '<select id="supAnimalUnidad"><option value="kg">Kilogramos (kg)</option><option value="g">Gramos (g)</option></select>' +
-        '<input id="supAnimalCantidad" type="number" placeholder="Cantidad" step="0.01" oninput="calcularCostoSupAnimal()">' +
-        '<div id="costoSupAnimalInfo" style="font-size:.7rem;color:var(--muted);"></div>' +
-        '<button class="btn btn-gold mt8" onclick="aplicarSuplementoAnimal(' + animalId + ')"><i class="fa-solid fa-check"></i> CONFIRMAR</button>' +
-        '<button class="btn btn-gray" onclick="document.querySelector(\'.modal-overlay\').remove()">CANCELAR</button></div>';
-    showModal(html); setTimeout(function() { actualizarUnidadesSupAnimal(); }, 100);
-}
-
-function actualizarUnidadesSupAnimal() {
-    var sel = document.getElementById('supAnimalProd');
-    var unidadSel = document.getElementById('supAnimalUnidad');
-    if (!sel || !unidadSel) return;
-    var sup = DB.suplementosAlimento.find(function(s) { return s.id === sel.value; });
-    if (sup) { unidadSel.value = sup.unidad; unidadSel.disabled = true; }
-    calcularCostoSupAnimal();
-}
-
-function calcularCostoSupAnimal() {
-    var sel = document.getElementById('supAnimalProd');
-    var cantEl = document.getElementById('supAnimalCantidad');
-    var info = document.getElementById('costoSupAnimalInfo');
-    var unidadSel = document.getElementById('supAnimalUnidad');
-    if (!sel || !cantEl || !info) return;
-    var sup = DB.suplementosAlimento.find(function(s) { return s.id === sel.value; });
-    if (!sup) return;
-    var cantidad = parseFloat(cantEl.value) || 0;
-    var unidad = unidadSel ? unidadSel.value : sup.unidad;
-    var costo = 0;
-    if (sup.precioUnitario) {
-        if (unidad === 'g' && sup.unidad === 'kg') { costo = cantidad * (sup.precioUnitario / 1000); }
-        else if (unidad === 'kg' && sup.unidad === 'g') { costo = cantidad * (sup.precioUnitario * 1000); }
-        else { costo = cantidad * sup.precioUnitario; }
-    }
-    info.innerHTML = '💰 Costo estimado: <b>$' + fm(costo) + '</b>';
-}
-
-function aplicarSuplementoAnimal(animalId) {
-    var sel = document.getElementById('supAnimalProd');
-    var cantEl = document.getElementById('supAnimalCantidad');
-    var unidadSel = document.getElementById('supAnimalUnidad');
-    if (!sel || !cantEl) return;
-    var supId = sel.value;
-    var cantidad = parseFloat(cantEl.value);
-    var unidad = unidadSel ? unidadSel.value : 'kg';
-    if (isNaN(cantidad) || cantidad <= 0) { alert('⚠️ Ingrese una cantidad válida'); return; }
-    
-    var sup = DB.suplementosAlimento.find(function(s) { return s.id === supId; });
-    var a = DB.animales.find(function(x) { return x.id === animalId; });
-    if (!sup || !a) return;
-    
-    var costo = 0;
-    if (sup.precioUnitario) {
-        if (unidad === 'g' && sup.unidad === 'kg') { costo = cantidad * (sup.precioUnitario / 1000); }
-        else if (unidad === 'kg' && sup.unidad === 'g') { costo = cantidad * (sup.precioUnitario * 1000); }
-        else { costo = cantidad * sup.precioUnitario; }
-    }
-    
-    // Convertir todo a kg para descontar del stock
-    var cantidadKg = unidad === 'g' ? cantidad / 1000 : cantidad;
-    var stockSup = DB.stockSuplementosAlimento.find(function(s) { return s.id === supId; });
-    if (stockSup) { stockSup.cantidad = Math.max(0, (stockSup.cantidad || 0) - cantidadKg); }
-    
-    DB.aplicaciones.push({ animalId: animalId, productoId: supId, producto: sup.nombre, cantidad: cantidad, unidad: unidad, costo: costo, fecha: new Date().toLocaleDateString(), tipo: 'alimento' });
-    save(); document.querySelector('.modal-overlay').remove();
-    showToast('✅ ' + sup.nombre + ': ' + cantidad + ' ' + unidad + ' ($' + fm(costo) + ')'); showProfile(animalId);
 }
 
 // ==================== 13. AUTO-GUARDADO ====================
@@ -655,4 +511,4 @@ renderLote();
 window.addEventListener('beforeunload', function() { save(); });
 document.addEventListener('visibilitychange', function() { if (document.hidden) save(); });
 setInterval(function() { save(); }, 30000);
-console.log('✅ GANADERO ÉLITE v2.1 listo');
+console.log('✅ GANADERO ÉLITE v2.2 listo');
