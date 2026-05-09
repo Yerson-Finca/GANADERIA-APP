@@ -8,6 +8,11 @@
  */
 console.log('🧠 GANADERO ÉLITE v3.0 - IA Local');
 
+setTimeout(function() {
+    var s = document.getElementById('splash');
+    if (s) s.classList.add('hide');
+}, 800);
+
 // ==================== 1. UTILIDADES ====================
 function fm(n) { if (isNaN(n) || n === null || n === undefined) return '0'; n = Math.round(n); var s = String(n), r = '', c = 0; for (var i = s.length - 1; i >= 0; i--) { if (c > 0 && c % 3 === 0) r = '.' + r; r = s.charAt(i) + r; c++; } return r; }
 function showToast(m, d) { d = d || 3000; var t = document.createElement('div'); t.className = 'toast'; t.innerHTML = m; document.getElementById('toastContainer').appendChild(t); setTimeout(function() { t.remove(); }, d); }
