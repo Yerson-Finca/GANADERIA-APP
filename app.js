@@ -511,7 +511,7 @@ function showProfile(id) {
         '<div class="row"><span class="row-label"><i class="fa-solid fa-syringe"></i> Costo san./día</span><span class="row-val">$ ' + fm(csd) + '</span></div>' +
         '<div class="row"><span class="row-label"><i class="fa-solid fa-sack-dollar"></i> Ganancia/mes</span><span class="row-val" style="color:' + (gan >= 0 ? '#22c55e' : '#ef4444') + '">$ ' + fm(gan) + '</span></div></div>' +
         appsHTML + '<div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIAL</div>' + hist +
-        '<div class="section-title"><i class="fa-solid fa-mortar-pestle"></i> DIETA</div>' + dietaHTML +
+        '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:6px;color:var(--accent);"><i class="fa-solid fa-mortar-pestle"></i> DIETA DIARIA</div>' + dietaHTML + '</div>' +
         '<div style="display:flex;gap:8px;margin-top:14px;"><button class="btn btn-purple btn-sm" onclick="openAplicarSanidad(' + id + ')" style="flex:1;"><i class="fa-solid fa-syringe"></i> Aplicar</button>' +
         '<button class="btn btn-gold btn-sm" onclick="updateWeight(' + id + ')" style="flex:2;"><i class="fa-solid fa-gauge-high"></i> REGISTRAR PESAJE</button></div></div>';
 
