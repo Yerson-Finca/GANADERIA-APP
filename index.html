@@ -19,7 +19,7 @@
     <div id="toastContainer"></div>
     <div id="modalContainer"></div>
 
-    <div class="splash" id="splash" onclick="document.getElementById('splash').classList.add('hide')">
+    <div class="splash" id="splash" onclick="this.classList.add('hide')">
         <div class="splash-icon">🐄</div>
         <div class="splash-title">GANADERO ÉLITE</div>
         <div class="splash-sub">v3.1 · IA + Alertas</div>
@@ -37,12 +37,17 @@
         <div id="v-perfil" class="hidden page"></div>
     </div>
 
+    <!-- MENÚ INFERIOR: Optimizado para pulgar derecho -->
     <nav class="bottom-nav" id="bottomNav">
-        <button class="bn-btn active" data-p="lote"><i class="fa-solid fa-chart-pie"></i><span>Lote</span></button>
-        <button class="bn-btn" data-p="sanidad"><i class="fa-solid fa-syringe"></i><span>Sanidad</span></button>
-        <button class="bn-btn-add" onclick="toggleAdd()"><i class="fa-solid fa-plus"></i></button>
-        <button class="bn-btn" data-p="insumos"><i class="fa-solid fa-boxes"></i><span>Insumos</span></button>
         <button class="bn-btn" data-p="ajustes"><i class="fa-solid fa-gear"></i><span>Ajustes</span></button>
+        <div class="bn-sep"></div>
+        <button class="bn-btn" data-p="sanidad"><i class="fa-solid fa-syringe"></i><span>Sanidad</span></button>
+        <div class="bn-sep"></div>
+        <button class="bn-btn-add" onclick="toggleAdd()"><i class="fa-solid fa-plus"></i></button>
+        <div class="bn-sep"></div>
+        <button class="bn-btn" data-p="insumos"><i class="fa-solid fa-boxes"></i><span>Insumos</span></button>
+        <div class="bn-sep"></div>
+        <button class="bn-btn active" data-p="lote"><i class="fa-solid fa-chart-pie"></i><span>Lote</span></button>
     </nav>
 
     <div class="modal-overlay hidden" id="addAnimalModal">
