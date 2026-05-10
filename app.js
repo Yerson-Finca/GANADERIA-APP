@@ -192,7 +192,14 @@ function calcularDosisModal(peso) { var sel = document.getElementById('aplProduc
 function aplicarProductoSanidad(animalId) { var sel = document.getElementById('aplProducto'), mlEl = document.getElementById('aplML'); if (!sel || !mlEl) return; var pid = sel.value, ml = parseFloat(mlEl.value); if (isNaN(ml) || ml <= 0) { alert('⚠️ ml válidos'); return; } var cat = getCatalogoSanidadCompleto(); var p = cat.find(function(x) { return x.id === pid; }); var a = DB.animales.find(function(x) { return x.id === animalId; }); if (!p || !a) return; var prc = p.tipo === 'fijo' ? (DB.preciosSanidad[pid] || 0) : (p.precioML || 0); var ct = prc * ml; DB.aplicaciones.push({ animalId: animalId, productoId: pid, producto: p.nombre, cantidad: ml, unidad: 'ml', costo: ct, fecha: new Date().toLocaleDateString(), tipo: 'sanidad' }); if (p.tipo === 'fijo') { DB.stockSanidad[pid] = Math.max(0, (DB.stockSanidad[pid] || 0) - ml); } else { p.stock = Math.max(0, (p.stock || 0) - ml); } save(); document.querySelector('.modal-overlay').remove(); showToast('✅ ' + p.nombre + ': ' + ml + ' ml ($' + fm(ct) + ')'); showProfile(animalId); }
 
 // ==================== AUTO-GUARDADO ====================
-cargarDatos(); renderLote();
+cargarDatos();
+try {
+    renderLote();
+    console.log('✅ Dashboard cargado');
+} catch(e) {
+    console.error('❌ Error:', e.message, 'en línea', e.lineNumber);
+    document.getElementById('v-lote').innerHTML = '<div class="card"><p style="text-align:center;color:var(--muted);padding:40px;">⚠️ Error al cargar.<br><small>' + e.message + '</small><br><br><button class="btn btn-gold" onclick="location.reload()">RECARGAR</button></p></div>';
+}
 setTimeout(function() { var s = document.getElementById('splash'); if (s && !s.classList.contains('hide')) s.classList.add('hide'); }, 3000);
 window.addEventListener('beforeunload', function() { save(); });
 document.addEventListener('visibilitychange', function() { if (document.hidden) save(); });
