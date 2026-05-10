@@ -237,6 +237,23 @@ function eliminarLote(id) { if (confirm('⚠️ ¿Eliminar este lote? Los animal
 function exportarDatos() { var b = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'ganadero-elite-respaldo.json'; a.click(); showToast('✅ Exportado'); }
 function importarDatos() { var i = document.createElement('input'); i.type = 'file'; i.accept = '.json'; i.onchange = function(e) { var r = new FileReader(); r.onload = function(e) { try { DB = JSON.parse(e.target.result); save(); renderDashboard(); showToast('✅ Importado'); } catch(err) { alert('❌ Error'); } }; r.readAsText(e.target.files[0]); }; i.click(); }
 
+function showProfile(id) {
+    var a = DB.animales.find(function(x) { return x.id === id; }); if (!a) return;
+    var p = a.historial[a.historial.length-1].peso;
+    var etapa = getEtapaCompleta(p, a.tipo, a.estadoRepro);
+    var r = getRendimiento(a.historial), gmd = getGMD(a.historial);
+    var cd = getCostoDiario(p, a.tipo, a.estadoRepro);
+    var valorActual = p * DB.precioKG;
+    var loteActual = DB.lotes ? DB.lotes.find(function(l) { return l.id === a.lote; }) : null;
+    document.getElementById('v-lote').classList.add('hidden');
+    document.getElementById('v-perfil').classList.remove('hidden');
+    var html = '<div class="card"><div class="profile-cover"><div class="profile-avatar">' + getIconoAnimal(a) + '</div><div class="profile-name">' + a.nombre + '</div><div class="profile-sub">' + (a.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche') + '</div><div class="profile-stats"><div class="profile-stat"><div class="val">' + fm(p) + ' kg</div><div class="lbl">Peso</div></div><div class="profile-stat"><div class="val">' + gmd.toFixed(2) + '</div><div class="lbl">GMD</div></div><div class="profile-stat"><div class="val">$ ' + fm(valorActual) + '</div><div class="lbl">Valor</div></div></div></div>' +
+        '<div class="row"><span class="row-label">Lote</span><span class="row-val">' + (loteActual ? loteActual.nombre : 'Sin lote') + '</span></div>' +
+        '<button class="btn btn-gold mt8" onclick="updateWeight(' + id + ')">REGISTRAR PESAJE</button>' +
+        '<button class="btn btn-gray mt8" onclick="goPage(\'lote\')">VOLVER</button></div>';
+    document.getElementById('v-perfil').innerHTML = html; window.scrollTo(0, 0);
+}
+
 // ==================== AUTO-GUARDADO MEJORADO ====================
 cargarDatos(); renderDashboard();
 window.addEventListener('beforeunload', function() { save(); });
