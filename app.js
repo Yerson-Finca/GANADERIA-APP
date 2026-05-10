@@ -242,16 +242,94 @@ function showProfile(id) {
     var p = a.historial[a.historial.length-1].peso;
     var etapa = getEtapaCompleta(p, a.tipo, a.estadoRepro);
     var r = getRendimiento(a.historial), gmd = getGMD(a.historial);
+    var d = getDietaCompleta(p, a.tipo, a.estadoRepro);
     var cd = getCostoDiario(p, a.tipo, a.estadoRepro);
+    var csd = 0; try { for (var i = 0; i < DB.aplicaciones.length; i++) { if (DB.aplicaciones[i].animalId === id) { var prod = getCatalogoSanidadCompleto().find(function(x) { return x.id === DB.aplicaciones[i].productoId; }); if (prod && prod.diasEfecto > 0) csd += (DB.aplicaciones[i].costo || 0) / prod.diasEfecto; } } } catch(e) { csd = 0; }
+    var cst = 0; try { for (var i = 0; i < DB.aplicaciones.length; i++) { if (DB.aplicaciones[i].animalId === id) cst += (DB.aplicaciones[i].costo || 0); } } catch(e) { cst = 0; }
+    var ckp = gmd > 0 ? (cd + csd) / gmd : 999999;
+    var ingM = gmd * 30 * DB.precioKG, gan = ingM - (cd * 30) - (cst / 12);
     var valorActual = p * DB.precioKG;
-    var loteActual = DB.lotes ? DB.lotes.find(function(l) { return l.id === a.lote; }) : null;
+    var diasUltimo = getDiasDesde(a.historial[a.historial.length-1].fecha);
+    var pred30 = predecirPeso(a.historial, 30), pred60 = predecirPeso(a.historial, 60), pred90 = predecirPeso(a.historial, 90);
+    var confianza = getConfianzaPrediccion(a.historial), tendTxt = getTendenciaTexto(a.historial), hayIA = pred30 !== null && pred30 > 0;
+    var semaforo = getSemaforo(a);
+    var loteActual = (DB.lotes && DB.lotes.length > 0) ? DB.lotes.find(function(l) { return l.id === a.lote; }) : null;
+
+    // 1. EDAD / ORIGEN
+    var edadHTML = '';
+    if (a.origen === 'nacimiento' && a.fechaNacimiento) { var diasEdad = getDiasDesde(a.fechaNacimiento); var meses = Math.floor(diasEdad / 30); edadHTML = '<div class="row"><span class="row-label"><i class="fa-solid fa-cake-candles"></i> Edad</span><span class="row-val">' + meses + ' meses (' + diasEdad + ' días)</span></div>'; }
+    if (a.origen === 'comprado' && a.fechaCompra) { var diasFinca = getDiasDesde(a.fechaCompra); edadHTML += '<div class="row"><span class="row-label"><i class="fa-solid fa-truck"></i> Días en finca</span><span class="row-val">' + diasFinca + ' días</span></div>'; if (a.precioCompra) { var roi = ((valorActual - a.precioCompra - cst) / a.precioCompra * 100).toFixed(1); edadHTML += '<div class="row"><span class="row-label"><i class="fa-solid fa-sack-dollar"></i> Precio compra</span><span class="row-val">$ ' + fm(a.precioCompra) + '</span></div><div class="row"><span class="row-label"><i class="fa-solid fa-chart-line"></i> ROI</span><span class="row-val" style="color:' + (roi >= 0 ? '#22c55e' : '#ef4444') + '">' + roi + '%</span></div>'; } }
+    if (a.madre) { var madre = DB.animales.find(function(x) { return x.nombre === a.madre || x.id === a.madre; }); if (madre) edadHTML += '<div class="row"><span class="row-label"><i class="fa-solid fa-cow"></i> Madre</span><span class="row-val" style="cursor:pointer;color:var(--accent);" onclick="showProfile(' + madre.id + ')">' + madre.nombre + '</span></div>'; }
+
+    // 2. LOTE ACTUAL
+    var loteHTML = '<div class="row"><span class="row-label"><i class="fa-solid fa-layer-group"></i> Lote</span><span class="row-val">' + (loteActual ? loteActual.nombre : 'Sin lote') + ' <button class="btn btn-purple btn-sm" onclick="cambiarLote(' + id + ')" style="padding:2px 8px;font-size:.6rem;margin-left:4px;"><i class="fa-solid fa-pen-to-square"></i></button></span></div>';
+
+    // 3. CRÍAS
+    var criasHTML = '';
+    if (a.tipo === 'leche') { var crias = DB.animales.filter(function(x) { return x.madre === a.nombre || x.madre === a.id; }); if (crias.length > 0) { criasHTML = '<div class="section-title"><i class="fa-solid fa-baby"></i> CRÍAS (' + crias.length + ')</div>'; for (var c = 0; c < crias.length; c++) criasHTML += '<div class="row" style="cursor:pointer;" onclick="showProfile(' + crias[c].id + ')"><span class="row-label"><div class="animal-avatar" style="width:24px;height:24px;font-size:.8rem;">' + getIconoAnimal(crias[c]) + '</div> ' + crias[c].nombre + '</span><span class="row-val">' + fm(crias[c].historial[crias[c].historial.length-1].peso) + ' kg</span></div>'; } }
+
+    // 4. PRODUCCIÓN LECHE
+    var lecheHTML = '';
+    if (a.tipo === 'leche' && a.estadoRepro === 'parida') { var litrosHoy = a.produccionLeche && a.produccionLeche.length > 0 ? a.produccionLeche[a.produccionLeche.length-1].litros : 0; var ingresoLeche = litrosHoy * (DB.litroLeche || 1500); lecheHTML = '<div class="card card-sm" style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2);"><div style="font-weight:700;font-size:.65rem;color:var(--accent);"><i class="fa-solid fa-glass-water-droplet"></i> PRODUCCIÓN LECHE</div><div class="row"><span class="row-label">Litros hoy</span><span class="row-val">' + litrosHoy + ' L</span></div><div class="row"><span class="row-label">Ingreso diario</span><span class="row-val" style="color:var(--accent);">$ ' + fm(ingresoLeche) + '</span></div><button class="btn btn-green btn-sm mt8" onclick="registrarLeche(' + id + ')" style="width:100%;"><i class="fa-solid fa-plus"></i> REGISTRAR LITROS</button></div>'; }
+
+    // 5. BOTONES DINÁMICOS
+    var botonesHTML = '';
+    if (a.tipo === 'leche' && a.estadoRepro === 'parida' && semaforo && semaforo.dias >= 60 && !a.fechaPrenez) { botonesHTML += '<button class="btn btn-purple btn-sm" onclick="quedoPrenada(' + id + ')" style="flex:1;"><i class="fa-solid fa-baby"></i> Quedó Preñada</button>'; }
+    if (a.tipo === 'leche' && a.fechaPrenez && a.fechaSecado) { var diasParaSecado = getDiasDesde(a.fechaSecado); if (diasParaSecado <= 7 && a.estadoRepro === 'parida') { botonesHTML += '<button class="btn btn-warning btn-sm" onclick="iniciarSecado(' + id + ')" style="flex:1;"><i class="fa-solid fa-pause"></i> Iniciar Secado</button>'; } }
+    if (a.tipo === 'leche' && a.estadoRepro === 'seca') { botonesHTML += '<button class="btn btn-green btn-sm" onclick="yaPario(' + id + ')" style="flex:1;"><i class="fa-solid fa-calendar-check"></i> Ya Parió</button>'; }
+    if (a.tipo === 'leche' && (a.estadoRepro === 'seca' || a.estadoRepro === 'parida')) { botonesHTML += '<button class="btn btn-gray btn-sm" onclick="cambiarAEngorde(' + id + ')" style="flex:1;"><i class="fa-solid fa-rotate"></i> Cambiar a Engorde</button>'; }
+
+    // 6. APLICACIONES
+    var apps = DB.aplicaciones ? DB.aplicaciones.filter(function(app) { return app.animalId === id; }).slice(-5).reverse() : [];
+    var appsHTML = '';
+    if (apps.length > 0) { appsHTML = '<div class="section-title"><i class="fa-solid fa-syringe"></i> APLICACIONES</div>'; var cat = getCatalogoSanidadCompleto(); for (var ap = 0; ap < apps.length; ap++) { var ico = 'fa-circle', col = '#fff'; if (apps[ap].tipo === 'sanidad') { var p2 = cat.find(function(p3) { return p3.id === apps[ap].productoId; }); if (p2) { ico = p2.icono; col = p2.color; } } else { ico = 'fa-flask'; col = '#a78bfa'; } appsHTML += '<div class="aplicacion-item"><span><i class="fa-solid ' + ico + '" style="color:' + col + ';"></i> ' + apps[ap].producto + '</span><span style="font-size:.63rem;">' + (apps[ap].cantidad || apps[ap].ml || '') + ' ' + (apps[ap].unidad || 'ml') + ' · $' + fm(apps[ap].costo || 0) + ' · ' + apps[ap].fecha + '</span></div>'; } }
+
+    // 7. HISTORIAL
+    var hist = '', rev = a.historial.slice().reverse();
+    for (var i = 0; i < rev.length; i++) { var h = rev[i], ch = '', di = ''; if (i === 0) di = '<span style="font-size:.58rem;color:var(--muted);margin-left:4px;">hace ' + getDiasDesde(h.fecha) + ' d</span>'; if (i < a.historial.length-1) { var ant = a.historial[a.historial.length-2-i].peso, dif = h.peso - ant, cls = dif >= 0 ? 'badge-up' : 'badge-down', sig = dif >= 0 ? '+' : ''; ch = '<span class="badge ' + cls + '">' + sig + ((dif/ant)*100).toFixed(1) + '%</span>'; } hist += '<div class="hist-item"><span><i class="fa-regular fa-calendar"></i> ' + h.fecha + di + '</span><div><span class="row-val">' + fm(h.peso) + ' kg</span>' + ch + '</div></div>'; }
+
+    // 8. DIETA
+    var dietaHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:6px;color:var(--accent);"><i class="fa-solid fa-mortar-pestle"></i> DIETA DIARIA</div>';
+    var items = [
+        { icono:'fa-seedling', nombre:'Pasto Picado', valor: (d.pasto||0).toFixed(1) + ' kg', costo: (d.pasto||0)*(DB.precios.pasto||0) },
+        { icono:'fa-wheat-awn', nombre:'Salvado Trigo', valor: (d.salvado||0).toFixed(2) + ' kg', costo: (d.salvado||0)*(DB.precios.salvado||0) },
+        { icono:'fa-droplet', nombre:'Melaza', valor: Math.round(d.melaza||0) + ' g', costo: ((d.melaza||0)/1000)*(DB.precios.melaza||0) },
+        { icono:'fa-flask-vial', nombre:'UREA', valor: Math.round(d.urea||0) + ' g', costo: ((d.urea||0)/1000)*(DB.precios.urea||0) },
+        { icono:'fa-cubes', nombre:'Bicarbonato', valor: Math.round(d.bicarb||0) + ' g', costo: ((d.bicarb||0)/1000)*(DB.precios.bicarb||0) },
+        { icono:'fa-vial-circle-check', nombre:'Sal Mineral', valor: Math.round(d.sal||0) + ' g', costo: ((d.sal||0)/1000)*(DB.precios.sal||0) },
+        { icono:'fa-flask', nombre:'Levadura', valor: Math.round(d.levadura||0) + ' g', costo: ((d.levadura||0)/1000)*(DB.precios.levadura||0) }
+    ];
+    for (var x = 0; x < items.length; x++) { var it = items[x]; var bloqueado = (it.nombre === 'UREA' && etapa.ureaBloqueada); dietaHTML += '<div class="row"><span class="row-label"><i class="fa-solid ' + it.icono + '"></i> ' + it.nombre + '</span><span class="row-val" style="' + (bloqueado ? 'color:#6b7280;text-decoration:line-through' : '') + '">' + (bloqueado ? '0 g (🔒)' : it.valor + ' · $' + fm(it.costo)) + '</span></div>'; }
+    dietaHTML += '</div>';
+
+    // 9. RENTABILIDAD
+    var rentHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:4px;color:var(--muted);"><i class="fa-solid fa-calculator"></i> RENTABILIDAD</div><div class="row"><span class="row-label"><i class="fa-solid fa-receipt"></i> Costo alim./día</span><span class="row-val">$ ' + fm(cd) + '</span></div><div class="row"><span class="row-label"><i class="fa-solid fa-sack-dollar"></i> Ganancia/mes</span><span class="row-val" style="color:' + (gan >= 0 ? '#22c55e' : '#ef4444') + '">$ ' + fm(gan) + '</span></div></div>';
+
+    // 10. IA PREDICCIÓN
+    var iaHTML = '';
+    if (hayIA) { var gan30 = (pred30 - p) * DB.precioKG, gan60 = (pred60 - p) * DB.precioKG, gan90 = (pred90 - p) * DB.precioKG; iaHTML = '<div class="ia-card"><div class="ia-title"><i class="fa-solid fa-brain"></i> PREDICCIÓN IA · Confianza: ' + confianza + '</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;"><div class="proyeccion-item"><div class="dias">30 DÍAS</div><div class="peso">' + fm(pred30) + ' kg</div><div class="ganancia" style="color:' + (gan30 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan30 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan30)) + '</div></div><div class="proyeccion-item"><div class="dias">60 DÍAS</div><div class="peso">' + fm(pred60) + ' kg</div><div class="ganancia" style="color:' + (gan60 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan60 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan60)) + '</div></div><div class="proyeccion-item"><div class="dias">90 DÍAS</div><div class="peso">' + fm(pred90) + ' kg</div><div class="ganancia" style="color:' + (gan90 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan90 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan90)) + '</div></div></div><div class="ia-confidence">📊 ' + tendTxt + ' · Basado en ' + a.historial.length + ' pesajes</div></div>'; }
+    else if (a.historial.length >= 1) { var p30s = p + (gmd * 30), p60s = p + (gmd * 60), p90s = p + (gmd * 90); iaHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:4px;color:var(--muted);"><i class="fa-solid fa-chart-line"></i> PROYECCIÓN SIMPLE</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;"><div class="proyeccion-item"><div class="dias">30 DÍAS</div><div class="peso">' + fm(p30s) + ' kg</div><div class="ganancia" style="color:' + ((p30s - p) * DB.precioKG >= 0 ? '#22c55e' : '#ef4444') + '">' + ((p30s - p) * DB.precioKG >= 0 ? '+' : '') + '$ ' + fm(Math.abs((p30s - p) * DB.precioKG)) + '</div></div><div class="proyeccion-item"><div class="dias">60 DÍAS</div><div class="peso">' + fm(p60s) + ' kg</div><div class="ganancia" style="color:' + ((p60s - p) * DB.precioKG >= 0 ? '#22c55e' : '#ef4444') + '">' + ((p60s - p) * DB.precioKG >= 0 ? '+' : '') + '$ ' + fm(Math.abs((p60s - p) * DB.precioKG)) + '</div></div><div class="proyeccion-item"><div class="dias">90 DÍAS</div><div class="peso">' + fm(p90s) + ' kg</div><div class="ganancia" style="color:' + ((p90s - p) * DB.precioKG >= 0 ? '#22c55e' : '#ef4444') + '">' + ((p90s - p) * DB.precioKG >= 0 ? '+' : '') + '$ ' + fm(Math.abs((p90s - p) * DB.precioKG)) + '</div></div></div><div style="font-size:.55rem;color:var(--muted);margin-top:4px;">⚠️ 3+ pesajes para IA</div></div>'; }
+
+    // 11. ALERTA RENDIMIENTO
+    var alertaHTML = '<div class="alerta-card ' + r.color + '" style="margin-bottom:10px;"><div class="alerta-led ' + r.color + '"><i class="fa-solid ' + r.icono + '"></i></div><div><div class="alerta-titulo">' + r.texto + '</div><div class="alerta-met">' + (r.cm >= 0 ? '+' : '') + r.cm.toFixed(1) + '% · $' + fm(ckp) + '/kg</div></div></div>';
+
+    // SEMÁFORO
+    var semaforoHTML = semaforo ? ' · <span class="semaforo semaforo-' + semaforo.color + '"></span> ' + semaforo.texto + ' (' + semaforo.dias + 'd)' : '';
+
+    // CONSTRUIR HTML COMPLETO
     document.getElementById('v-lote').classList.add('hidden');
+    document.getElementById('v-insumos').classList.add('hidden');
+    document.getElementById('v-sanidad').classList.add('hidden');
+    document.getElementById('v-ajustes').classList.add('hidden');
     document.getElementById('v-perfil').classList.remove('hidden');
-    var html = '<div class="card"><div class="profile-cover"><div class="profile-avatar">' + getIconoAnimal(a) + '</div><div class="profile-name">' + a.nombre + '</div><div class="profile-sub">' + (a.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche') + '</div><div class="profile-stats"><div class="profile-stat"><div class="val">' + fm(p) + ' kg</div><div class="lbl">Peso</div></div><div class="profile-stat"><div class="val">' + gmd.toFixed(2) + '</div><div class="lbl">GMD</div></div><div class="profile-stat"><div class="val">$ ' + fm(valorActual) + '</div><div class="lbl">Valor</div></div></div></div>' +
-        '<div class="row"><span class="row-label">Lote</span><span class="row-val">' + (loteActual ? loteActual.nombre : 'Sin lote') + '</span></div>' +
-        '<button class="btn btn-gold mt8" onclick="updateWeight(' + id + ')">REGISTRAR PESAJE</button>' +
-        '<button class="btn btn-gray mt8" onclick="goPage(\'lote\')">VOLVER</button></div>';
-    document.getElementById('v-perfil').innerHTML = html; window.scrollTo(0, 0);
+
+    var html = '<div class="card"><div class="profile-cover"><div class="profile-avatar" onclick="abrirFoto(' + id + ')">' + getIconoAnimal(a) + '<div class="foto-overlay">📸</div></div><div class="profile-name">' + a.nombre + '</div><div class="profile-sub">' + etapa.rango + ' · ' + (a.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche') + semaforoHTML + '</div><div class="profile-stats"><div class="profile-stat"><div class="val">' + fm(p) + ' kg</div><div class="lbl">Peso</div></div><div class="profile-stat"><div class="val">' + gmd.toFixed(2) + '</div><div class="lbl">GMD</div></div><div class="profile-stat"><div class="val">$ ' + fm(valorActual) + '</div><div class="lbl">Valor</div></div></div>' + (etapa.min !== undefined ? '<div class="progress"><div class="progress-fill" style="width:' + getProgresoEtapa(p, etapa) + '%;background:' + etapa.color + ';"></div></div><div style="font-size:.6rem;color:var(--muted);text-align:center;margin-top:4px;">Faltan ' + fm((etapa.max||9999) - p) + ' kg para ' + etapa.siguienteEtapa + '</div>' : '') + '</div>' +
+        edadHTML + loteHTML + lecheHTML + criasHTML + alertaHTML + iaHTML + rentHTML +
+        appsHTML + '<div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> HISTORIAL</div>' + hist + dietaHTML +
+        '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">' + botonesHTML + '<button class="btn btn-purple btn-sm" onclick="openAplicarSanidad(' + id + ')" style="flex:1;"><i class="fa-solid fa-syringe"></i> Aplicar</button><button class="btn btn-gold btn-sm" onclick="updateWeight(' + id + ')" style="flex:2;"><i class="fa-solid fa-gauge-high"></i> REGISTRAR PESAJE</button></div></div>';
+    document.getElementById('v-perfil').innerHTML = html;
+    window.scrollTo(0, 0);
+    save();
 }
 
 // ==================== AUTO-GUARDADO MEJORADO ====================
