@@ -1,16 +1,45 @@
 {
   "name": "GANADERO ELITE",
-  "short_name": "Ganadero Elite",
-  "description": "Gestión inteligente de ganadería - Nutrición de precisión",
-  "start_url": "./index.html",
+  "short_name": "Ganadero",
+  "description": "Gestión inteligente de ganadería - IA, Sanidad, Nutrición",
+  "start_url": "./index.html?utm_source=pwa",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#030303",
   "theme_color": "#fbbf24",
   "lang": "es-CO",
+  "shortcuts": [
+    {
+      "name": "Registrar Pesaje",
+      "short_name": "Pesaje",
+      "description": "Registrar nuevo pesaje",
+      "url": "./index.html?action=pesaje",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='20' fill='%23030303'/%3E%3Ctext x='48' y='62' font-size='40' text-anchor='middle' fill='%23fbbf24'%3E⚖%EF%B8%8F%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ver Lote",
+      "short_name": "Lote",
+      "description": "Dashboard del lote",
+      "url": "./index.html?action=lote",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='20' fill='%23030303'/%3E%3Ctext x='48' y='62' font-size='40' text-anchor='middle' fill='%23fbbf24'%3E📊%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "Agregar Animal",
+      "short_name": "Nuevo",
+      "description": "Registrar nuevo animal",
+      "url": "./index.html?action=nuevo",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='20' fill='%23030303'/%3E%3Ctext x='48' y='62' font-size='40' text-anchor='middle' fill='%23fbbf24'%3E🐄%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    }
+  ],
   "icons": [
     { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23030303'/%3E%3Ctext x='96' y='110' font-size='80' text-anchor='middle' fill='%23fbbf24'%3E🐄%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23030303'/%3E%3Ctext x='256' y='280' font-size='200' text-anchor='middle' fill='%23fbbf24'%3E🐄%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%23030303'/%3E%3Ctext x='256' y='280' font-size='200' text-anchor='middle' fill='%23fbbf24'%3E🐄%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23fbbf24'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='%23030303'%3E🐄%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "monochrome" }
   ],
-  "categories": ["business", "productivity"]
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "display_override": ["standalone", "minimal-ui"],
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "edge_side_panel": { "preferred_width": 400 }
 }
