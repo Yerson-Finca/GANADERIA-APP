@@ -479,6 +479,259 @@ function cambiarAEngorde(id) { /* ... (sin cambios) ... */ }
 
 // ==================== SANIDAD / INSUMOS / AJUSTES (sin cambios mayores) ====================
 // ... (mantener funciones existentes) ...
+function showProfile(id) {
+    var a = DB.animales.find(function(x) { return x.id === id; }); if (!a) return;
+    var p = a.historial[a.historial.length-1].peso;
+    var etapa = getEtapaCompleta(p, a.tipo, a.estadoRepro);
+    var r = getRendimiento(a.historial), gmd = getGMD(a.historial);
+    var d = getDietaCompleta(p, a.tipo, a.estadoRepro);
+    var cd = getCostoDiario(p, a.tipo, a.estadoRepro);
+    var csd = 0; try { for (var i = 0; i < DB.aplicaciones.length; i++) { if (DB.aplicaciones[i].animalId === id) { var prod = getCatalogoSanidadCompleto().find(function(x) { return x.id === DB.aplicaciones[i].productoId; }); if (prod && prod.diasEfecto > 0) csd += (DB.aplicaciones[i].costo || 0) / prod.diasEfecto; } } } catch(e) { csd = 0; }
+    var cst = 0; try { for (var i = 0; i < DB.aplicaciones.length; i++) { if (DB.aplicaciones[i].animalId === id) cst += (DB.aplicaciones[i].costo || 0); } } catch(e) { cst = 0; }
+    var ckp = gmd > 0 ? (cd + csd) / gmd : 999999;
+    var ingM = gmd * 30 * DB.precioKG, gan = ingM - (cd * 30) - (cst / 12);
+    var valorActual = p * DB.precioKG;
+    var diasUltimo = getDiasDesde(a.historial[a.historial.length-1].fecha);
+    var pred30 = predecirPeso(a.historial, 30), pred60 = predecirPeso(a.historial, 60), pred90 = predecirPeso(a.historial, 90), pred120 = predecirPeso(a.historial, 120);
+    var confianza = getConfianzaPrediccion(a.historial), tendTxt = getTendenciaTexto(a.historial), hayIA = pred30 !== null && pred30 > 0;
+    var semaforo = getSemaforo(a);
+    var loteActual = (DB.lotes && DB.lotes.length > 0) ? DB.lotes.find(function(l) { return l.id === a.lote; }) : null;
+
+    // ============ 🧠 NUEVO: IA AVANZADA ============
+    // Datos del lote para comparativas
+    var animalesLote = DB.animales.filter(function(x) { return x.lote === a.lote && x.id !== a.id; });
+    var gmdPromLote = 0, mejorGMDLote = 0, mejorNombreLote = '', countLote = 0;
+    for (var i = 0; i < animalesLote.length; i++) {
+        var gmdL = getGMD(animalesLote[i].historial);
+        if (animalesLote[i].historial.length >= 2) {
+            gmdPromLote += gmdL;
+            countLote++;
+            if (gmdL > mejorGMDLote) { mejorGMDLote = gmdL; mejorNombreLote = animalesLote[i].nombre; }
+        }
+    }
+    gmdPromLote = countLote > 0 ? gmdPromLote / countLote : gmd;
+    
+    // Datos globales para ranking
+    var todos = DB.animales.filter(function(x) { return x.id !== a.id && x.historial.length >= 2; });
+    var mejorGlobal = null, peorGlobal = null;
+    for (var i = 0; i < todos.length; i++) {
+        var gmdG = getGMD(todos[i].historial);
+        if (!mejorGlobal || gmdG > mejorGlobal.gmd) mejorGlobal = { nombre: todos[i].nombre, gmd: gmdG };
+        if (!peorGlobal || gmdG < peorGlobal.gmd) peorGlobal = { nombre: todos[i].nombre, gmd: gmdG };
+    }
+    
+    // Comparativas
+    var vsPromLote = gmdPromLote > 0 ? ((gmd - gmdPromLote) / gmdPromLote * 100) : 0;
+    var vsMejorLote = mejorGMDLote > 0 ? ((gmd - mejorGMDLote) / mejorGMDLote * 100) : 0;
+    var vsMejorGlobal = mejorGlobal ? ((gmd - mejorGlobal.gmd) / mejorGlobal.gmd * 100) : 0;
+    
+    // Tendencia histórica
+    var tendenciaHistorica = getTendenciaHistorica(a.historial);
+    var emojiTendencia = tendenciaHistorica === 'acelerando' ? '🚀' : tendenciaHistorica === 'cayendo' ? '📉' : '📊';
+    var colorTendencia = tendenciaHistorica === 'acelerando' ? '#22c55e' : tendenciaHistorica === 'cayendo' ? '#ef4444' : '#fbbf24';
+    
+    // Eficiencia
+    var eficiencia = r.pct || Math.round(50 + r.cm * 10);
+    var nivelEficiencia = getEficiencia(eficiencia);
+    
+    // Detectar anomalías
+    var anomalias = detectarAnomalias(a);
+    
+    // Generar alertas IA personalizadas
+    var alertasIA = [];
+    if (gmd < 0.2 && a.historial.length >= 2) alertasIA.push({ icon: '🔴', texto: 'GMD crítica. Considere venta urgente.', color: '#ef4444', accion: 'vender' });
+    if (anomalias.length > 0) alertasIA.push({ icon: '⚠️', texto: 'Posible anomalía en último pesaje. Verificar báscula.', color: '#f59e0b', accion: 'revisar' });
+    if (tendenciaHistorica === 'cayendo') alertasIA.push({ icon: '📉', texto: 'GMD en descenso hace 2 meses. Revisar dieta y sanidad.', color: '#f59e0b', accion: 'revisarDieta' });
+    if (p >= 500 && a.tipo === 'engorde') alertasIA.push({ icon: '🎯', texto: 'Peso de venta alcanzado. Vender pronto para máx. ganancia.', color: '#22c55e', accion: 'vender' });
+    if (diasUltimo > 30) alertasIA.push({ icon: '📅', texto: 'Pesaje vencido hace ' + diasUltimo + ' días. Actualice para mejores predicciones.', color: '#f59e0b', accion: 'pesar' });
+    
+    // Generar sugerencias IA
+    var sugerencias = [];
+    if (p >= 130 && p < 350 && gmd > 0) sugerencias.push({ icon: '💡', texto: 'Preparar cambio a dieta Ceba en ~' + getDiasParaMeta(p, 350, gmd) + ' días.', impacto: '+0.08 kg/d', accion: 'planificar' });
+    if (gmd > 0 && gmd < 0.35 && p > 150) sugerencias.push({ icon: '🧪', texto: 'Aplicar Modificador Orgánico (impacto est: +0.05 kg/d, ~$12.000/dosis).', impacto: '+0.05 kg/d', accion: 'aplicarModificador' });
+    if (p >= 350 && p < 500) sugerencias.push({ icon: '📈', texto: 'Aumentar melaza al 5% en Ceba (impacto: +0.08 kg/d).', impacto: '+0.08 kg/d', accion: 'aumentarMelaza' });
+    if (gmd < 0.3) sugerencias.push({ icon: '💊', texto: 'Aplicar Complejo B + Desparasitante para reactivar GMD.', impacto: '+0.04 kg/d', accion: 'desparasitar' });
+    if (p >= 500) sugerencias.push({ icon: '💰', texto: 'Vender ahora: $' + fm(valorActual) + '. Continuar cuesta $' + fm(cd*30) + '/mes.', impacto: 'análisis', accion: 'vender' });
+    
+    // Simulador de escenarios
+    var simulacion = simularCambio(id, 'ambos');
+    
+    // Fecha óptima de venta
+    var diasPara500 = getDiasParaMeta(p, 500, gmd);
+    var fechaVentaOptima = new Date(Date.now() + diasPara500 * 86400000);
+    var fechaVentaStr = diasPara500 < 9999 ? fechaVentaOptima.toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}) : 'N/A';
+
+    // ============ 1. EDAD / ORIGEN (Tu versión base) ============
+    var edadHTML = '';
+    if (a.origen === 'nacimiento' && a.fechaNacimiento) { var diasEdad = getDiasDesde(a.fechaNacimiento); var meses = Math.floor(diasEdad / 30); edadHTML = '<div class="row"><span class="row-label">🎂 Edad</span><span class="row-val">' + meses + ' meses (' + diasEdad + ' días)</span></div>'; }
+    if (a.origen === 'comprado' && a.fechaCompra) { var diasFinca = getDiasDesde(a.fechaCompra); edadHTML += '<div class="row"><span class="row-label">🚚 Días en finca</span><span class="row-val">' + diasFinca + ' días</span></div>'; if (a.precioCompra) { var roi = ((valorActual - a.precioCompra - cst) / a.precioCompra * 100).toFixed(1); edadHTML += '<div class="row"><span class="row-label">💰 Precio compra</span><span class="row-val">$ ' + fm(a.precioCompra) + '</span></div><div class="row"><span class="row-label">📈 ROI</span><span class="row-val" style="color:' + (roi >= 0 ? '#22c55e' : '#ef4444') + '">' + roi + '%</span></div>'; } }
+    if (a.madre) { var madre = DB.animales.find(function(x) { return x.nombre === a.madre || x.id === a.madre; }); if (madre) edadHTML += '<div class="row"><span class="row-label">🐄 Madre</span><span class="row-val" style="cursor:pointer;color:var(--accent);" onclick="showProfile(' + madre.id + ')">' + madre.nombre + '</span></div>'; }
+
+    // ============ 2. LOTE ACTUAL ============
+    var loteHTML = '<div class="row"><span class="row-label">📊 Lote</span><span class="row-val">' + (loteActual ? escapeHTML(loteActual.nombre) : 'Sin lote') + ' <button class="btn btn-purple btn-sm" onclick="cambiarLote(' + id + ')" style="padding:2px 8px;font-size:.6rem;margin-left:4px;">✏️</button></span></div>';
+
+    // ============ 3. CRÍAS ============
+    var criasHTML = '';
+    if (a.tipo === 'leche') { var crias = DB.animales.filter(function(x) { return x.madre === a.nombre || x.madre === a.id; }); if (crias.length > 0) { criasHTML = '<div class="section-title">👶 CRÍAS (' + crias.length + ')</div>'; for (var c = 0; c < crias.length; c++) criasHTML += '<div class="row" style="cursor:pointer;" onclick="showProfile(' + crias[c].id + ')"><span class="row-label"><div class="animal-avatar" style="width:24px;height:24px;font-size:.8rem;">' + getIconoAnimal(crias[c]) + '</div> ' + escapeHTML(crias[c].nombre) + '</span><span class="row-val">' + fm(crias[c].historial[crias[c].historial.length-1].peso) + ' kg</span></div>'; } }
+
+    // ============ 4. PRODUCCIÓN LECHE ============
+    var lecheHTML = '';
+    if (a.tipo === 'leche' && a.estadoRepro === 'parida') { var litrosHoy = a.produccionLeche && a.produccionLeche.length > 0 ? a.produccionLeche[a.produccionLeche.length-1].litros : 0; var ingresoLeche = litrosHoy * (DB.litroLeche || 1500); lecheHTML = '<div class="card card-sm" style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2);"><div style="font-weight:700;font-size:.65rem;color:var(--accent);">🥛 PRODUCCIÓN LECHE</div><div class="row"><span class="row-label">Litros hoy</span><span class="row-val">' + litrosHoy + ' L</span></div><div class="row"><span class="row-label">Ingreso diario</span><span class="row-val" style="color:var(--accent);">$ ' + fm(ingresoLeche) + '</span></div><button class="btn btn-green btn-sm mt8" onclick="registrarLeche(' + id + ')" style="width:100%;">➕ REGISTRAR LITROS</button></div>'; }
+
+    // ============ 5. BOTONES DINÁMICOS ============
+    var botonesHTML = '';
+    if (a.tipo === 'leche' && a.estadoRepro === 'parida' && semaforo && semaforo.dias >= 60 && !a.fechaPrenez) { botonesHTML += '<button class="btn btn-purple btn-sm" onclick="quedoPrenada(' + id + ')" style="flex:1;">👶 Quedó Preñada</button>'; }
+    if (a.tipo === 'leche' && a.fechaPrenez && a.fechaSecado) { var diasParaSecado = getDiasDesde(a.fechaSecado); if (diasParaSecado <= 7 && a.estadoRepro === 'parida') { botonesHTML += '<button class="btn btn-warning btn-sm" onclick="iniciarSecado(' + id + ')" style="flex:1;">⏸️ Iniciar Secado</button>'; } }
+    if (a.tipo === 'leche' && a.estadoRepro === 'seca') { botonesHTML += '<button class="btn btn-green btn-sm" onclick="yaPario(' + id + ')" style="flex:1;">✅ Ya Parió</button>'; }
+    if (a.tipo === 'leche' && (a.estadoRepro === 'seca' || a.estadoRepro === 'parida')) { botonesHTML += '<button class="btn btn-gray btn-sm" onclick="cambiarAEngorde(' + id + ')" style="flex:1;">🔄 Cambiar a Engorde</button>'; }
+
+    // ============ 6. APLICACIONES ============
+    var apps = DB.aplicaciones ? DB.aplicaciones.filter(function(app) { return app.animalId === id; }).slice(-5).reverse() : [];
+    var appsHTML = '';
+    if (apps.length > 0) { appsHTML = '<div class="section-title">💉 APLICACIONES</div>'; var cat = getCatalogoSanidadCompleto(); for (var ap = 0; ap < apps.length; ap++) { var p2 = cat.find(function(p3) { return p3.id === apps[ap].productoId; }); appsHTML += '<div class="aplicacion-item"><span>' + (p2 ? p2.icono : '💉') + ' ' + escapeHTML(apps[ap].producto) + '</span><span style="font-size:.63rem;">' + (apps[ap].cantidad || '') + ' ' + (apps[ap].unidad || 'ml') + ' · $' + fm(apps[ap].costo || 0) + ' · ' + apps[ap].fecha + '</span></div>'; } }
+
+    // ============ 7. HISTORIAL ============
+    var hist = '', rev = a.historial.slice().reverse();
+    for (var i = 0; i < rev.length; i++) { var h = rev[i], ch = '', di = ''; if (i === 0) di = '<span style="font-size:.58rem;color:var(--muted);margin-left:4px;">hace ' + getDiasDesde(h.fecha) + ' d</span>'; if (i < a.historial.length-1) { var ant = a.historial[a.historial.length-2-i].peso, dif = h.peso - ant, cls = dif >= 0 ? 'badge-up' : 'badge-down', sig = dif >= 0 ? '+' : ''; ch = '<span class="badge ' + cls + '">' + sig + ((dif/ant)*100).toFixed(1) + '%</span>'; } hist += '<div class="hist-item"><span>📅 ' + h.fecha + di + '</span><div><span class="row-val">' + fm(h.peso) + ' kg</span>' + ch + '</div></div>'; }
+
+    // ============ 8. DIETA ============
+    var dietaHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:6px;color:var(--accent);">🧪 DIETA DIARIA</div>';
+    var items = [
+        { icono:'🌱', nombre:'Pasto Picado', valor: (d.pasto||0).toFixed(1) + ' kg', costo: (d.pasto||0)*(DB.precios.pasto||0) },
+        { icono:'🌾', nombre:'Salvado Trigo', valor: (d.salvado||0).toFixed(2) + ' kg', costo: (d.salvado||0)*(DB.precios.salvado||0) },
+        { icono:'💧', nombre:'Melaza', valor: Math.round(d.melaza||0) + ' g', costo: ((d.melaza||0)/1000)*(DB.precios.melaza||0) },
+        { icono:'⚗️', nombre:'UREA', valor: Math.round(d.urea||0) + ' g', costo: ((d.urea||0)/1000)*(DB.precios.urea||0) },
+        { icono:'🧊', nombre:'Bicarbonato', valor: Math.round(d.bicarb||0) + ' g', costo: ((d.bicarb||0)/1000)*(DB.precios.bicarb||0) },
+        { icono:'🧂', nombre:'Sal Mineral', valor: Math.round(d.sal||0) + ' g', costo: ((d.sal||0)/1000)*(DB.precios.sal||0) }
+    ];
+    for (var x = 0; x < items.length; x++) { var it = items[x]; var bloqueado = (it.nombre === 'UREA' && etapa.ureaBloqueada); dietaHTML += '<div class="row"><span class="row-label">' + it.icono + ' ' + it.nombre + '</span><span class="row-val" style="' + (bloqueado ? 'color:#6b7280;text-decoration:line-through' : '') + '">' + (bloqueado ? '0 g (🔒)' : it.valor + ' · $' + fm(it.costo)) + '</span></div>'; }
+    dietaHTML += '</div>';
+
+    // ============ 9. RENTABILIDAD ============
+    var rentHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:4px;color:var(--muted);">💰 RENTABILIDAD</div><div class="row"><span class="row-label">Costo alim./día</span><span class="row-val">$ ' + fm(cd) + '</span></div><div class="row"><span class="row-label">Costo/kg ganado</span><span class="row-val">$ ' + fm(ckp) + '</span></div><div class="row"><span class="row-label">Ganancia/mes</span><span class="row-val" style="color:' + (gan >= 0 ? '#22c55e' : '#ef4444') + '">$ ' + fm(gan) + '</span></div></div>';
+
+    // ============ 🧠 10. NUEVO: IA PREDICCIÓN AVANZADA ============
+    var iaHTML = '';
+    if (hayIA) {
+        var gan30 = (pred30 - p) * DB.precioKG, gan60 = (pred60 - p) * DB.precioKG, gan90 = (pred90 - p) * DB.precioKG, gan120 = (pred120 && pred120 > 0) ? (pred120 - p) * DB.precioKG : 0;
+        iaHTML = '<div class="ia-card"><div class="ia-title">🧠 IA PREDICTIVA · Confianza: ' + confianza.nivel + ' (' + confianza.pct + '%)</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:8px;">' +
+            '<div class="proyeccion-item"><div class="dias">30 DÍAS</div><div class="peso">' + fm(pred30) + ' kg</div><div class="ganancia" style="color:' + (gan30 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan30 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan30)) + '</div></div>' +
+            '<div class="proyeccion-item"><div class="dias">60 DÍAS</div><div class="peso">' + fm(pred60) + ' kg</div><div class="ganancia" style="color:' + (gan60 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan60 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan60)) + '</div></div>' +
+            '<div class="proyeccion-item"><div class="dias">90 DÍAS</div><div class="peso">' + fm(pred90) + ' kg</div><div class="ganancia" style="color:' + (gan90 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan90 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan90)) + '</div></div>' +
+            (pred120 > 0 ? '<div class="proyeccion-item"><div class="dias">120 DÍAS</div><div class="peso">' + fm(pred120) + ' kg</div><div class="ganancia" style="color:' + (gan120 >= 0 ? '#22c55e' : '#ef4444') + '">' + (gan120 >= 0 ? '+' : '') + '$ ' + fm(Math.abs(gan120)) + '</div></div>' : '<div class="proyeccion-item"><div class="dias">120 DÍAS</div><div class="peso">--</div></div>') +
+            '</div>' +
+            '<div style="font-size:.62rem;color:var(--muted);margin-bottom:4px;">🎯 VENTA ÓPTIMA (500kg): <b>' + fechaVentaStr + '</b> (' + diasPara500 + ' días) · Ganancia est: <b style="color:#22c55e">$' + fm((500-p)*DB.precioKG - cd*diasPara500) + '</b></div>' +
+            '<div style="font-size:.62rem;color:var(--muted);">📈 Tendencia: <b style="color:' + colorTendencia + '">' + emojiTendencia + ' ' + tendTxt + '</b> · Basado en ' + a.historial.length + ' pesajes</div></div>';
+    } else if (a.historial.length >= 1) {
+        var p30s = p + (gmd * 30), p60s = p + (gmd * 60), p90s = p + (gmd * 90);
+        iaHTML = '<div class="card card-sm"><div style="font-weight:700;font-size:.65rem;margin-bottom:4px;color:var(--muted);">📈 PROYECCIÓN SIMPLE</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;"><div class="proyeccion-item"><div class="dias">30 DÍAS</div><div class="peso">' + fm(p30s) + ' kg</div></div><div class="proyeccion-item"><div class="dias">60 DÍAS</div><div class="peso">' + fm(p60s) + ' kg</div></div><div class="proyeccion-item"><div class="dias">90 DÍAS</div><div class="peso">' + fm(p90s) + ' kg</div></div></div><div style="font-size:.55rem;color:var(--muted);margin-top:4px;">⚠️ 3+ pesajes para activar IA predictiva</div></div>';
+    }
+
+    // ============ 🧠 11. NUEVO: COMPARATIVA INTELIGENTE ============
+    var compHTML = '<div class="ia-card"><div class="ia-title">📊 COMPARATIVA INTELIGENTE</div>' +
+        '<div style="font-size:.62rem;display:flex;flex-direction:column;gap:4px;">' +
+        '<div class="row"><span class="row-label">vs Promedio del lote</span><span class="row-val" style="color:' + (vsPromLote >= 0 ? '#22c55e' : '#ef4444') + '">' + (vsPromLote >= 0 ? '📈 +' : '📉 ') + Math.abs(vsPromLote).toFixed(1) + '%</span></div>' +
+        (mejorNombreLote ? '<div class="row"><span class="row-label">vs Mejor del lote (' + escapeHTML(mejorNombreLote) + ')</span><span class="row-val" style="color:' + (vsMejorLote >= 0 ? '#22c55e' : '#f59e0b') + '">' + (vsMejorLote >= 0 ? '📈 +' : '📉 ') + Math.abs(vsMejorLote).toFixed(1) + '%</span></div>' : '') +
+        (mejorGlobal ? '<div class="row"><span class="row-label">vs Mejor del sistema (' + escapeHTML(mejorGlobal.nombre) + ')</span><span class="row-val" style="color:' + (vsMejorGlobal >= 0 ? '#22c55e' : '#f59e0b') + '">' + (vsMejorGlobal >= 0 ? '📈 +' : '📉 ') + Math.abs(vsMejorGlobal).toFixed(1) + '%</span></div>' : '') +
+        '<div class="row"><span class="row-label">Eficiencia</span><span class="row-val" style="color:' + nivelEficiencia.color + '">' + nivelEficiencia.icono + ' ' + eficiencia + '% (' + nivelEficiencia.nivel + ')</span></div>' +
+        '</div></div>';
+
+    // ============ 🧠 12. NUEVO: ALERTAS IA ============
+    var alertasIAHTML = '';
+    if (alertasIA.length > 0) {
+        alertasIAHTML = '<div class="card card-sm" style="background:rgba(239,68,68,.03);border:1px solid rgba(239,68,68,.15);"><div style="font-weight:700;font-size:.65rem;color:#ef4444;margin-bottom:6px;">⚠️ ALERTAS IA (' + alertasIA.length + ')</div>';
+        for (var al = 0; al < alertasIA.length; al++) {
+            alertasIAHTML += '<div class="ia-sugerencia" style="border-left:3px solid ' + alertasIA[al].color + ';padding-left:6px;"><span class="ia-icon">' + alertasIA[al].icon + '</span>' + alertasIA[al].texto + '</div>';
+        }
+        alertasIAHTML += '</div>';
+    }
+
+    // ============ 🧠 13. NUEVO: SUGERENCIAS IA ============
+    var sugerenciasHTML = '';
+    if (sugerencias.length > 0) {
+        sugerenciasHTML = '<div class="card card-sm" style="background:rgba(167,139,250,.03);border:1px solid rgba(167,139,250,.15);"><div style="font-weight:700;font-size:.65rem;color:var(--purple);margin-bottom:6px;">💡 SUGERENCIAS IA</div>';
+        for (var su = 0; su < sugerencias.length; su++) {
+            sugerenciasHTML += '<div class="ia-sugerencia"><span class="ia-icon">' + sugerencias[su].icon + '</span>' + sugerencias[su].texto + ' <span style="color:#22c55e;font-size:.6rem;font-weight:600;">' + (sugerencias[su].impacto || '') + '</span></div>';
+        }
+        sugerenciasHTML += '</div>';
+    }
+
+    // ============ 🧠 14. NUEVO: SIMULADOR IA ============
+    var simHTML = '';
+    if (simulacion && gmd > 0) {
+        simHTML = '<div class="ia-card" style="margin-top:8px;background:rgba(34,197,94,.03);border:1px solid rgba(34,197,94,.2);"><div class="ia-title">🔮 SIMULADOR IA</div>' +
+            '<div style="font-size:.6rem;color:var(--muted);margin-bottom:4px;">¿Qué pasa si aplicas Melaza 5% + Modificador?</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.62rem;">' +
+            '<div>GMD actual: <b>' + gmd.toFixed(2) + ' kg/d</b></div>' +
+            '<div>GMD simulado: <b style="color:#22c55e">' + simulacion.gmdSimulado.toFixed(2) + ' kg/d</b></div>' +
+            '<div>Venta actual: <b>' + fechaVentaStr + '</b></div>' +
+            '<div>Venta simulada: <b style="color:#fbbf24">' + simulacion.fechaVentaSim + '</b></div>' +
+            '<div>Adelanto: <b style="color:#22c55e">' + simulacion.diasAdelanto + ' días</b></div>' +
+            '<div>Ganancia extra: <b style="color:#22c55e">+$' + fm(simulacion.impactoGanancia) + '</b></div>' +
+            '<div>ROI de la acción: <b style="color:#22c55e">' + simulacion.roi + '%</b></div>' +
+            '</div>' +
+            '<div style="font-size:.55rem;color:#22c55e;margin-top:4px;">🟢 RECOMENDADO: El ROI es muy positivo</div></div>';
+    }
+
+    // ============ ALERTA RENDIMIENTO (Tu versión base) ============
+    var alertaHTML = '<div class="alerta-card ' + r.color + '" style="margin-bottom:10px;"><div class="alerta-led ' + r.color + '">' + r.icono + '</div><div><div class="alerta-titulo">' + r.texto + '</div><div class="alerta-met">' + (r.cm >= 0 ? '+' : '') + r.cm.toFixed(1) + '% · $' + fm(ckp) + '/kg ganado</div></div></div>';
+
+    // ============ SEMÁFORO ============
+    var semaforoHTML = semaforo ? ' · <span class="semaforo semaforo-' + semaforo.color + '"></span> ' + semaforo.texto + ' (' + semaforo.dias + 'd)' : '';
+
+    // ============ 🏗️ CONSTRUIR HTML COMPLETO ============
+    document.getElementById('v-lotes').classList.add('hidden');
+    document.getElementById('v-animales').classList.add('hidden');
+    document.getElementById('v-insumos').classList.add('hidden');
+    document.getElementById('v-ajustes').classList.add('hidden');
+    document.getElementById('v-perfil').classList.remove('hidden');
+
+    var html = 
+        // Tarjeta principal con avatar
+        '<div class="card"><div class="profile-cover"><div class="profile-avatar" onclick="abrirFoto(' + id + ')">' + getIconoAnimal(a) + '<div class="foto-overlay">📸</div></div><div class="profile-name">' + escapeHTML(a.nombre) + '</div><div class="profile-sub">' + etapa.rango + ' · ' + (a.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche') + semaforoHTML + '</div><div class="profile-stats"><div class="profile-stat"><div class="val">' + fm(p) + ' kg</div><div class="lbl">Peso</div></div><div class="profile-stat"><div class="val">' + gmd.toFixed(2) + '</div><div class="lbl">GMD</div></div><div class="profile-stat"><div class="val">$ ' + fm(valorActual) + '</div><div class="lbl">Valor</div></div></div>' + 
+        (etapa.min !== undefined ? '<div class="progress"><div class="progress-fill" style="width:' + getProgresoEtapa(p, etapa) + '%;background:' + etapa.color + ';"></div></div><div style="font-size:.6rem;color:var(--muted);text-align:center;margin-top:4px;">Faltan ' + fm((etapa.max||9999) - p) + ' kg para ' + etapa.siguienteEtapa + '</div>' : '') + '</div>' +
+        
+        // Información básica
+        edadHTML + loteHTML + lecheHTML + criasHTML + 
+        
+        // Alerta de rendimiento
+        alertaHTML + 
+        
+        // 🧠 IA Predictiva
+        iaHTML + 
+        
+        // 🧠 Comparativa Inteligente
+        compHTML + 
+        
+        // 🧠 Alertas IA
+        alertasIAHTML + 
+        
+        // 🧠 Sugerencias IA
+        sugerenciasHTML + 
+        
+        // 🧠 Simulador IA
+        simHTML + 
+        
+        // Rentabilidad
+        rentHTML + 
+        
+        // Aplicaciones
+        appsHTML + 
+        
+        // Historial
+        '<div class="section-title">🕐 HISTORIAL (' + a.historial.length + ')</div>' + hist + 
+        
+        // Dieta
+        dietaHTML + 
+        
+        // Botones de acción
+        '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">' + botonesHTML + '<button class="btn btn-purple btn-sm" onclick="openAplicarSanidad(' + id + ')" style="flex:1;">💉 Sanidad</button><button class="btn btn-gold btn-sm" onclick="updateWeight(' + id + ')" style="flex:2;">⚖️ PESAJE</button></div>';
+
+    document.getElementById('v-perfil').innerHTML = html;
+    window.scrollTo(0, 0);
+    save();
+}
 
 // ==================== INIT ====================
 cargarDatos();
