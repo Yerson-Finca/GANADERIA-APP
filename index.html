@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GANADERO ÉLITE v5.0</title>
+    <title>GANADERO ÉLITE v5.1</title>
     <meta name="theme-color" content="#030303">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,17 +11,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="Gestión inteligente de ganadería con IA Predictiva Total - 100% Offline">
     
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Estilos propios -->
     <link rel="stylesheet" href="./styles.css">
-    
-    <!-- Manifest PWA -->
     <link rel="manifest" href="./manifest.json">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='6' fill='%23030303'/%3E%3Ctext x='16' y='22' font-size='16' text-anchor='middle' fill='%23fbbf24'%3E🧠%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='6' fill='%23030303'/%3E%3Ctext x='16' y='22' font-size='16' text-anchor='middle'%3E👑%3C/text%3E%3C/svg%3E">
 </head>
 <body>
     <div class="aurora"></div>
@@ -29,51 +21,51 @@
     <div id="modalContainer"></div>
 
     <div class="splash" id="splash" onclick="forceHideSplash()">
-        <div class="splash-icon"><i class="fa-solid fa-brain"></i></div>
+        <div class="splash-icon">👑</div>
         <div class="splash-title">GANADERO ÉLITE</div>
-        <div class="splash-sub">v5.0 · IA Predictiva Total</div>
+        <div class="splash-sub">v5.1 · IA Predictiva Total</div>
     </div>
 
     <div class="app">
         <header>
-            <h1><i class="fa-solid fa-crown"></i> GANADERO ÉLITE</h1>
-            <p class="subtitle"><i class="fa-solid fa-cow"></i> Engorde + <i class="fa-solid fa-glass-water-droplet"></i> Leche · IA Predictiva Total</p>
+            <h1>👑 GANADERO ÉLITE</h1>
+            <p class="subtitle">🥩 Engorde + 🥛 Leche · IA Predictiva Total</p>
         </header>
         
         <div id="v-lote" class="page"></div>
+        <div id="v-animales" class="hidden page"></div>
         <div id="v-insumos" class="hidden page"></div>
-        <div id="v-sanidad" class="hidden page"></div>
         <div id="v-ajustes" class="hidden page"></div>
         <div id="v-perfil" class="hidden page"></div>
     </div>
 
-    <!-- Menú reorganizado: Ajustes | Sanidad | Insumos | [+] | Lote -->
+    <!-- Menú: Ajustes | Insumos | ➕ | Lotes | Animales -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="bn-btn" data-p="ajustes">
-            <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+            <span class="nav-icon">⚙️</span>
             <span>Ajustes</span>
         </button>
-        <button class="bn-btn" data-p="sanidad">
-            <span class="nav-icon"><i class="fa-solid fa-syringe"></i></span>
-            <span>Sanidad</span>
-        </button>
         <button class="bn-btn" data-p="insumos">
-            <span class="nav-icon"><i class="fa-solid fa-boxes"></i></span>
+            <span class="nav-icon">📦</span>
             <span>Insumos</span>
         </button>
         <button class="bn-btn-add" onclick="toggleAdd()" aria-label="Agregar animal">
-            <span class="nav-icon"><i class="fa-solid fa-plus"></i></span>
+            <span class="nav-icon">👑</span>
         </button>
         <button class="bn-btn active" data-p="lote">
-            <span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span>
-            <span>Dashboard</span>
+            <span class="nav-icon">📊</span>
+            <span>Lotes</span>
+        </button>
+        <button class="bn-btn" data-p="animales">
+            <span class="nav-icon">🐄</span>
+            <span>Animales</span>
         </button>
     </nav>
 
-    <!-- Modal agregar animal -->
+    <!-- Modal agregar animal - SIN VALORES POR DEFECTO -->
     <div class="modal-overlay hidden" id="addAnimalModal">
         <div class="modal">
-            <div class="modal-title"><i class="fa-solid fa-cow"></i> NUEVO ANIMAL</div>
+            <div class="modal-title">🐄 NUEVO ANIMAL</div>
             <div class="flex-col gap10">
                 <input id="newN" type="text" placeholder="Nombre del Animal">
                 <input id="newW" type="number" placeholder="Peso Inicial (kg)" min="20" max="2000">
@@ -94,17 +86,15 @@
                 <select id="newLote">
                     <option value="">Sin lote (por defecto)</option>
                 </select>
-                <button class="btn btn-gold" onclick="addAnimal()"><i class="fa-solid fa-check"></i> GUARDAR</button>
-                <button class="btn btn-gray" onclick="closeAddModal()"><i class="fa-solid fa-xmark"></i> CANCELAR</button>
+                <button class="btn btn-green" onclick="addAnimal()">✅ GUARDAR</button>
+                <button class="btn btn-gray" onclick="closeAddModal()">CANCELAR</button>
             </div>
         </div>
     </div>
 
     <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="guardarFoto()">
 
-    <!-- Scripts -->
     <script src="./app.js"></script>
-    
     <script>
         function forceHideSplash() { var s = document.getElementById('splash'); if (s) { s.classList.add('hide'); setTimeout(function() { if (s.parentNode) s.style.display = 'none'; }, 500); } }
         setTimeout(forceHideSplash, 1000);
@@ -112,12 +102,11 @@
         window.addEventListener('load', function() { setTimeout(forceHideSplash, 300); });
 
         var deferredPrompt;
-        window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; localStorage.setItem('pwa_installable', '1'); });
-        window.addEventListener('appinstalled', function() { deferredPrompt = null; localStorage.setItem('pwa_installed', '1'); });
-        function instalarApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(result) { if (result.outcome === 'accepted') { deferredPrompt = null; localStorage.setItem('pwa_installed', '1'); } }); } else { showToast('<i class="fa-solid fa-mobile-screen"></i> La app ya está instalada o no disponible.'); } }
+        window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; });
+        window.addEventListener('appinstalled', function() { deferredPrompt = null; });
+        function instalarApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(r) { if (r.outcome === 'accepted') deferredPrompt = null; }); } else { showToast('📱 App ya instalada'); } }
 
-        if ('Notification' in window && Notification.permission === 'default') { setTimeout(function() { Notification.requestPermission(); }, 5000); }
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw-v2.js').then(function(reg) { console.log('✅ SW registrado'); }).catch(function(e) { console.log('SW error:', e); }); }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw-v2.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) {}); }
     </script>
 </body>
 </html>
