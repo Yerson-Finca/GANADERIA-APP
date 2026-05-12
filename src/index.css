@@ -41,8 +41,11 @@
   }
   
   .btn-green {
-    @apply bg-success text-white;
-  }
+  @apply bg-transparent text-success border border-success/40;
+}
+.btn-green:active {
+  @apply bg-success/10;
+}
   
   .btn-gray {
     @apply bg-card text-text-secondary border border-border;
