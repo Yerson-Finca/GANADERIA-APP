@@ -21,6 +21,7 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
   const [aplicaciones, setAplicaciones] = useState<any[]>([])
   const [lotes, setLotes] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
+  const [crias, setCrias] = useState<Animal[]>([])
 
   useEffect(() => {
     cargarDatos()
@@ -34,6 +35,10 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     setAplicaciones(apps.reverse().slice(0, 5))
     setLotes(lts)
     setCargando(false)
+    if (a && a.tipo === 'leche') {
+      const c = await db.animales.filter(x => x.madre === a.nombre || x.madre === String(a.id)).toArray()
+      setCrias(c)
+    }
   }
 
   if (cargando || !animal) {
@@ -49,7 +54,7 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
   const r = getRendimiento(animal.historial)
   const gmd = getGMD(animal.historial)
   const cd = getCostoDiario(p, animal.tipo, animal.estadoRepro, preciosAlimento)
-  const cst = aplicaciones.reduce((s, app) => s + (app.costo || 0), 0)
+  const cst = aplicaciones.reduce((s: number, app: any) => s + (app.costo || 0), 0)
   const ckp = gmd > 0 ? cd / gmd : 999999
   const gan = gmd * 30 * precioKG - (cd * 30) - (cst / 12)
   const valorActual = p * precioKG
@@ -58,10 +63,11 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
   const pred90 = predecirPeso(animal.historial, 90)
   const confianza = getConfianzaPrediccion(animal.historial)
   const hayIA = pred30 !== null && pred30 > 0
-  const semaforo = getSemaforo(animal)
+  const semaforo: any = getSemaforo(animal) || null
   const loteActual = lotes.find(l => l.id === animal.lote)
+  const litrosHoy = animal.produccionLeche && animal.produccionLeche.length > 0
+    ? animal.produccionLeche[animal.produccionLeche.length - 1].litros : 0
 
-  // Edad
   const edadHTML = () => {
     const parts: React.ReactNode[] = []
     if (animal.origen === 'nacimiento' && animal.fechaNacimiento) {
@@ -85,15 +91,6 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     return parts
   }
 
-  // Crías
-  const [crias, setCrias] = useState<Animal[]>([])
-  useEffect(() => {
-    if (animal.tipo === 'leche') {
-      db.animales.filter(a => a.madre === animal.nombre || a.madre === String(animal.id)).toArray().then(setCrias)
-    }
-  }, [animal])
-
-  // Registrar pesaje
   const registrarPesaje = async () => {
     const pesoStr = prompt('⚖️ Nuevo pesaje (kg):')
     if (!pesoStr) return
@@ -108,7 +105,6 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     cargarDatos()
   }
 
-  // Eliminar
   const eliminarAnimal = async () => {
     if (!confirm('⚠️ ¿Eliminar este animal permanentemente?')) return
     await db.animales.delete(animalId)
@@ -116,14 +112,12 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     volver()
   }
 
-  // Cambiar lote
   const cambiarLote = async (loteId: string | null) => {
     await db.animales.update(animalId, { lote: loteId })
     cargarDatos()
     if ((window as any).haptic) (window as any).haptic()
   }
 
-  // Aplicar sanidad
   const aplicarSanidad = async () => {
     const cat = [...CATALOGO_SANIDAD]
     const productoId = prompt('Producto:\n' + cat.map(p => `${p.id}: ${p.nombre}`).join('\n'))
@@ -134,18 +128,15 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     if (!mlStr) return
     const ml = parseFloat(mlStr)
     if (isNaN(ml) || ml <= 0) { alert('⚠️ ml válidos'); return }
-    const prc = prod.tipo === 'fijo' ? 0 : 0
-    const ct = prc * ml
     await db.aplicaciones.add({
       animalId, productoId: prod.id, producto: prod.nombre,
-      cantidad: ml, unidad: 'ml', costo: ct,
+      cantidad: ml, unidad: 'ml', costo: 0,
       fecha: new Date().toLocaleDateString(), tipo: 'sanidad'
     })
     if ((window as any).haptic) (window as any).haptic()
     cargarDatos()
   }
 
-  // Foto
   const abrirFoto = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -164,7 +155,6 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     input.click()
   }
 
-  // Leche
   const registrarLeche = async () => {
     const litrosStr = prompt('🥛 Litros producidos hoy:')
     if (!litrosStr) return
@@ -176,7 +166,6 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     cargarDatos()
   }
 
-  // Reproductivas
   const quedoPrenada = async () => {
     if (!confirm('🤰 ¿Confirmar preñez?')) return
     const hoy = new Date()
@@ -222,19 +211,25 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     cargarDatos()
   }
 
-  const litrosHoy = animal.produccionLeche && animal.produccionLeche.length > 0
-    ? animal.produccionLeche[animal.produccionLeche.length - 1].litros : 0
-
   return (
- <div className="profile-sub">
-  {etapa.rango} · {animal.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche'}
-  {semaforo && (
-    <>
-      <span className={'semaforo semaforo-' + (semaforo as any).color} />
-      <span className="text-xs ml-1">{(semaforo as any).texto}</span>
-    </>
-  )}
-</div>
+    <div>
+      {/* Header perfil */}
+      <div className="card">
+        <div className="profile-cover">
+          <div className="profile-avatar" onClick={abrirFoto}>
+            {animal.foto ? <img src={animal.foto} alt={animal.nombre} /> : etapa.icono}
+            <div className="foto-overlay">📸</div>
+          </div>
+          <div className="profile-name">{animal.nombre}</div>
+          <div className="profile-sub">
+            {etapa.rango} · {animal.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche'}
+            {semaforo && (
+              <>
+                <span className={`semaforo semaforo-${semaforo.color}`} />
+                <span className="text-xs ml-1">{semaforo.texto}</span>
+              </>
+            )}
+          </div>
           <div className="profile-stats">
             <div className="profile-stat">
               <div className="profile-stat-val">{fm(p)} kg</div>
@@ -261,13 +256,10 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
           )}
         </div>
 
-        {/* Edad y lote */}
         {edadHTML()}
         <div className="row">
           <span className="row-label"><Icono nombre="cube" tamaño={14} /> Lote</span>
-          <span className="row-val">
-            {loteActual ? loteActual.nombre : 'Sin lote'}
-          </span>
+          <span className="row-val">{loteActual ? loteActual.nombre : 'Sin lote'}</span>
         </div>
       </div>
 
@@ -303,9 +295,7 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
         <div className={`alerta-led alerta-led-${r.color}`}>{r.icono}</div>
         <div>
           <div className="alerta-titulo">{r.texto}</div>
-          <div className="alerta-met">
-            {r.cm >= 0 ? '+' : ''}{r.cm.toFixed(1)}% · ${fm(ckp)}/kg
-          </div>
+          <div className="alerta-met">{r.cm >= 0 ? '+' : ''}{r.cm.toFixed(1)}% · ${fm(ckp)}/kg</div>
         </div>
       </div>
 
@@ -355,25 +345,19 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
 
       {/* Alerta venta */}
       {p >= 500 && animal.tipo === 'engorde' && (
-        <div className="alert-item alert-danger">
-          💰 ¡VENDER! {fm(p)}kg · Est. $ {fm(valorActual)}
-        </div>
+        <div className="alert-item alert-danger">💰 ¡VENDER! {fm(p)}kg · Est. $ {fm(valorActual)}</div>
       )}
 
       {/* Rentabilidad */}
       <div className="card-sm mb-3">
-        <div className="font-bold text-xs text-text-muted mb-2">
-          <Icono nombre="currency-dollar" tamaño={12} /> RENTABILIDAD
-        </div>
+        <div className="font-bold text-xs text-text-muted mb-2"><Icono nombre="currency-dollar" tamaño={12} /> RENTABILIDAD</div>
         <div className="row">
           <span className="row-label">Costo/día</span>
           <span className="row-val">$ {fm(cd)}</span>
         </div>
         <div className="row">
           <span className="row-label">Ganancia/mes</span>
-          <span className="row-val" style={{ color: gan >= 0 ? '#22C55E' : '#EF4444' }}>
-            $ {fm(gan)}
-          </span>
+          <span className="row-val" style={{ color: gan >= 0 ? '#22C55E' : '#EF4444' }}>$ {fm(gan)}</span>
         </div>
       </div>
 
@@ -381,7 +365,7 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
       {aplicaciones.length > 0 && (
         <div className="mb-3">
           <div className="section-title"><Icono nombre="beaker" tamaño={12} /> APLICACIONES</div>
-          {aplicaciones.map((app, i) => (
+          {aplicaciones.map((app: any, i: number) => (
             <div key={i} className="aplicacion-item">
               <span>{app.producto}</span>
               <span className="text-[0.6rem]">{app.fecha} · ${fm(app.costo || 0)}</span>
@@ -395,9 +379,7 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
         <div className="section-title"><Icono nombre="clock-rotate-left" tamaño={12} /> HISTORIAL</div>
         {[...animal.historial].reverse().map((h, i) => {
           const idx = animal.historial.length - 1 - i
-          const cambio = idx > 0
-            ? ((h.peso - animal.historial[idx - 1].peso) / animal.historial[idx - 1].peso * 100)
-            : 0
+          const cambio = idx > 0 ? ((h.peso - animal.historial[idx - 1].peso) / animal.historial[idx - 1].peso * 100) : 0
           return (
             <div key={i} className="hist-item">
               <span>📅 {h.fecha}</span>
@@ -435,20 +417,11 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
         <div className="font-bold text-xs text-text-muted mb-2">📊 CAMBIAR LOTE</div>
         <div className="flex flex-wrap gap-1.5">
           {lotes.filter(l => l.tipo === animal.tipo).map(l => (
-            <button
-              key={l.id}
-              className={`btn btn-sm ${animal.lote === l.id ? 'btn-green' : 'btn-gray'}`}
-              onClick={() => cambiarLote(l.id)}
-            >
+            <button key={l.id} className={`btn btn-sm ${animal.lote === l.id ? 'btn-green' : 'btn-gray'}`} onClick={() => cambiarLote(l.id)}>
               {l.nombre}
             </button>
           ))}
-          <button
-            className={`btn btn-sm ${!animal.lote ? 'btn-green' : 'btn-gray'}`}
-            onClick={() => cambiarLote(null)}
-          >
-            Sin lote
-          </button>
+          <button className={`btn btn-sm ${!animal.lote ? 'btn-green' : 'btn-gray'}`} onClick={() => cambiarLote(null)}>Sin lote</button>
         </div>
       </div>
 
