@@ -1,1 +1,17 @@
-
+{
+  "name": "GANADERO ÉLITE",
+  "short_name": "Ganadero Élite",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23080808'/%3E%3Ctext x='256' y='352' font-size='256' text-anchor='middle' fill='%23F5C842'%3E👑%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
