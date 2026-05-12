@@ -1,1 +1,283 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply bg-bg text-text-primary font-sans antialiased overflow-x-hidden;
+    padding-bottom: 100px;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-card border border-border rounded-2xl p-5 shadow-card;
+  }
+  
+  .card-sm {
+    @apply bg-card border border-border rounded-xl p-4;
+  }
+  
+  .card-accent {
+    @apply border-accent/30;
+  }
+  
+  .btn {
+    @apply w-full py-4 px-5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.97];
+  }
+  
+  .btn-green {
+    @apply bg-success text-white;
+  }
+  
+  .btn-gray {
+    @apply bg-card text-text-secondary border border-border;
+  }
+  
+  .btn-purple {
+    @apply bg-info/20 text-info border border-info/30;
+  }
+  
+  .btn-danger {
+    @apply bg-danger/15 text-danger border border-danger/30;
+  }
+  
+  .btn-sm {
+    @apply w-auto py-2 px-4 text-xs min-h-[38px] whitespace-nowrap;
+  }
+
+  .input {
+    @apply w-full py-3.5 px-4 rounded-xl bg-bg border border-border text-text-primary font-medium text-sm outline-none transition-all duration-150 focus:border-accent focus:ring-2 focus:ring-accent-glow;
+  }
+
+  .section-title {
+    @apply flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-muted mt-4 mb-2 pb-2 border-b border-border;
+  }
+
+  .capital-value {
+    @apply text-3xl font-black text-accent;
+  }
+
+  .row {
+    @apply flex justify-between items-center py-2.5 border-b border-border/50 last:border-0;
+  }
+
+  .row-label {
+    @apply text-text-muted text-xs flex items-center gap-2;
+  }
+
+  .row-val {
+    @apply font-semibold text-base text-accent;
+  }
+
+  .alert-item {
+    @apply flex items-start gap-2 p-3 rounded-lg text-xs border mb-1;
+  }
+
+  .alert-danger {
+    @apply bg-danger/10 border-danger/30 text-danger;
+  }
+
+  .alert-warning {
+    @apply bg-warning/10 border-warning/30 text-warning;
+  }
+
+  .badge-up {
+    @apply bg-success/15 text-success text-xs font-semibold px-2 py-0.5 rounded-md;
+  }
+
+  .badge-down {
+    @apply bg-danger/15 text-danger text-xs font-semibold px-2 py-0.5 rounded-md;
+  }
+
+  .mini-led {
+    @apply absolute top-3 right-3 w-2 h-2 rounded-full;
+  }
+
+  .led-green { @apply bg-success; }
+  .led-blue { @apply bg-info; }
+  .led-orange { @apply bg-warning; }
+  .led-red { @apply bg-danger; }
+  .led-gray { @apply bg-text-muted; }
+
+  .etapa-tag {
+    @apply inline-block px-2 py-0.5 rounded-lg text-xs font-semibold;
+  }
+
+  .etapa-inicio { @apply bg-accent/15 text-accent; }
+  .etapa-desarrollo { @apply bg-info/15 text-info; }
+  .etapa-ceba { @apply bg-warning/15 text-warning; }
+  .etapa-madurez { @apply bg-danger/15 text-danger; }
+
+  .animal-card {
+    @apply bg-card border border-border rounded-2xl p-3.5 text-center cursor-pointer relative transition-all duration-150 active:bg-card active:border-accent active:-translate-y-0.5 active:shadow-accent;
+  }
+
+  .animal-card-inicio { @apply border-l-[3px] border-l-accent; }
+  .animal-card-desarrollo { @apply border-l-[3px] border-l-info; }
+  .animal-card-ceba { @apply border-l-[3px] border-l-warning; }
+  .animal-card-madurez { @apply border-l-[3px] border-l-danger; }
+
+  .lote-card {
+    @apply bg-card border border-border rounded-2xl p-4 mb-3 cursor-pointer transition-all duration-150 active:bg-card active:border-accent active:-translate-y-0.5 active:shadow-accent;
+  }
+
+  .proyeccion-item {
+    @apply bg-bg border border-border rounded-xl p-2.5 text-center;
+  }
+
+  .proyeccion-dias {
+    @apply text-[0.6rem] text-text-muted;
+  }
+
+  .proyeccion-peso {
+    @apply font-bold text-sm text-accent;
+  }
+
+  .proyeccion-ganancia {
+    @apply text-[0.62rem] mt-0.5;
+  }
+
+  .ranking-item {
+    @apply flex items-center gap-2 py-1.5 text-xs cursor-pointer;
+  }
+
+  .alerta-card {
+    @apply flex items-center gap-3.5 p-3.5 rounded-2xl mb-3.5 border;
+  }
+
+  .alerta-card-verde { @apply bg-success/10 border-success/30; }
+  .alerta-card-azul { @apply bg-info/10 border-info/30; }
+  .alerta-card-naranja { @apply bg-warning/10 border-warning/30; }
+  .alerta-card-rojo { @apply bg-danger/10 border-danger/30; }
+
+  .alerta-led {
+    @apply w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0 text-white;
+  }
+
+  .alerta-led-verde { @apply bg-success; }
+  .alerta-led-azul { @apply bg-info; }
+  .alerta-led-naranja { @apply bg-warning; }
+  .alerta-led-rojo { @apply bg-danger; }
+
+  .semaforo {
+    @apply inline-block w-3.5 h-3.5 rounded-full mr-1 align-middle;
+  }
+
+  .semaforo-verde { @apply bg-success; }
+  .semaforo-amarillo { @apply bg-warning; }
+  .semaforo-rojo { @apply bg-danger; }
+
+  .progress {
+    @apply w-full h-1.5 bg-border rounded-full overflow-hidden my-2;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  .ia-card {
+    @apply bg-card border border-info/20 rounded-2xl p-4 mb-3.5;
+  }
+
+  .ia-title {
+    @apply text-xs font-bold text-info mb-2 flex items-center gap-1.5;
+  }
+
+  .toast {
+    @apply fixed top-5 left-1/2 -translate-x-1/2 bg-card border border-accent px-5 py-3.5 rounded-3xl z-[1000] font-medium text-sm animate-slide-down animate-fade-in shadow-accent text-center max-w-[90%];
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-5;
+  }
+
+  .modal {
+    @apply bg-card border border-border rounded-2xl p-6 w-full max-w-[420px] max-h-[80vh] overflow-y-auto;
+  }
+
+  .modal-title {
+    @apply font-bold text-sm mb-3 text-accent flex items-center gap-2;
+  }
+
+  .bottom-nav {
+    @apply fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-0 bg-card border border-border rounded-2xl px-2.5 py-1.5 z-[100] shadow-card;
+  }
+
+  .bn-btn {
+    @apply flex flex-col items-center justify-center gap-0.5 px-3 py-2 border-none bg-transparent text-text-muted text-[0.55rem] font-medium cursor-pointer rounded-xl transition-all duration-150 min-w-[48px];
+  }
+
+  .bn-btn.active {
+    @apply text-accent;
+  }
+
+  .bn-btn-add {
+    @apply w-[50px] h-[50px] rounded-full bg-accent text-bg text-xl cursor-pointer flex items-center justify-center mx-1.5 -mt-2.5 shadow-accent transition-all duration-150 active:scale-90 border-2 border-accent;
+  }
+
+  .profile-avatar {
+    @apply w-20 h-20 rounded-full bg-bg flex items-center justify-center text-4xl mx-auto mb-2 border-[3px] border-accent overflow-hidden cursor-pointer relative;
+  }
+
+  .profile-name {
+    @apply font-black text-xl text-accent;
+  }
+
+  .profile-stats {
+    @apply flex gap-2 justify-center my-2.5;
+  }
+
+  .profile-stat {
+    @apply text-center py-1.5 px-3 bg-bg rounded-xl border border-border;
+  }
+
+  .profile-stat-val {
+    @apply text-base font-extrabold text-accent;
+  }
+
+  .profile-stat-lbl {
+    @apply text-[0.55rem] text-text-muted;
+  }
+
+  .hist-item {
+    @apply flex justify-between items-center py-2 px-2.5 bg-bg rounded-xl mb-1 border border-border text-xs;
+  }
+
+  .insumo-row {
+    @apply flex items-center gap-2 py-2.5 border-b border-border last:border-0 text-sm;
+  }
+
+  .sup-card {
+    @apply bg-bg border border-border rounded-xl p-3 mb-2;
+  }
+
+  .config-section {
+    @apply bg-card p-3 rounded-xl mb-2.5 border border-border;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 2px; }
+
+/* Glassmorphism para modales */
+.modal-overlay {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
