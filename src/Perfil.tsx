@@ -236,10 +236,14 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
           </div>
           <div className="profile-name">{animal.nombre}</div>
           <div className="profile-sub">
-            {etapa.rango} · {animal.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche'}
-            {semaforo && <span className={`semaforo semaforo-${semaforo?.color || 'verde'}`} />}
-            {semaforo && <span className="text-xs ml-1">{semaforo.texto}</span>}
-          </div>
+  {etapa.rango} · {animal.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche'}
+  {semaforo && (
+    <>
+      <span className={`semaforo semaforo-${semaforo.color}`} />
+      <span className="text-xs ml-1">{semaforo.texto}</span>
+    </>
+  )}
+</div>
           <div className="profile-stats">
             <div className="profile-stat">
               <div className="profile-stat-val">{fm(p)} kg</div>
