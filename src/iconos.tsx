@@ -57,4 +57,15 @@ const Icono: React.FC<IconoProps> = ({ nombre, tamaño = 20, variante = 'outline
     'face-smile': <><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><path d="M9 9h.01" /><path d="M15 9h.01" /></>,
     'calendar-days': <><path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" /><path d="M16 18h.01" /></>,
     'clock-rotate-left': <><path d="M12 6v6l4 2" /><path d="M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z" /><path d="M7 5 3 9l4 4" /></>,
-    'magnifying-glass': <><circle cx="11" cy="11" r="8" /><path d="m21 21-
+    'magnifying-glass': <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
+    'arrows-right-left': <><path d="m16 3 4 4-4 4" /><path d="M20 7H4" /><path d="m8 21-4-4 4-4" /><path d="M4 17h16" /></>,
+    'bell-alert': <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /><path d="M4 2 2 4" /><path d="M20 2 22 4" /></>,
+    'cake': <><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" /><path d="M4 13h16" /><path d="M12 3v4" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>,
+    'share': <><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" /></>,
+    'heart': <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" />
+  }
+
+  return <svg {...props}>{paths[nombre] || paths['star']}</svg>
+}
+
+export default Icono
