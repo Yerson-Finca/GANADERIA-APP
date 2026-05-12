@@ -226,23 +226,14 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
     ? animal.produccionLeche[animal.produccionLeche.length - 1].litros : 0
 
   return (
-    <div>
-      {/* Header perfil */}
-      <div className="card">
-        <div className="profile-cover">
-          <div className="profile-avatar" onClick={abrirFoto}>
-            {animal.foto ? <img src={animal.foto} alt={animal.nombre} /> : etapa.icono}
-            <div className="foto-overlay">📸</div>
-          </div>
-          <div className="profile-name">{animal.nombre}</div>
-          <div className="profile-sub">
+ <div className="profile-sub">
   {etapa.rango} · {animal.tipo === 'engorde' ? '🥩 Engorde' : '🥛 Leche'}
-  {semaforo && semaforo.color && (
-  <>
-    <span className={`semaforo semaforo-${String(semaforo.color)}`} />
-    <span className="text-xs ml-1">{String(semaforo.texto || '')}</span>
-  </>
-)}
+  {semaforo && (
+    <>
+      <span className={'semaforo semaforo-' + (semaforo as any).color} />
+      <span className="text-xs ml-1">{(semaforo as any).texto}</span>
+    </>
+  )}
 </div>
           <div className="profile-stats">
             <div className="profile-stat">
