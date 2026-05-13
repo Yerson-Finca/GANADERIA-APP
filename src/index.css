@@ -110,10 +110,13 @@ input:focus, select:focus {
 .btn:last-child { margin-bottom: 0; }
 
 .btn-green {
-  background: #F5C842;
-  color: #000;
-  border-color: #F5C842;
-  box-shadow: 0 0 12px rgba(245, 200, 66, 0.12);
+  background: rgba(253, 204, 13, 0.1);
+  color: #FDCC0D;
+  border-color: rgba(253, 204, 13, 0.25);
+}
+
+.btn-green:active {
+  background: rgba(253, 204, 13, 0.18);
 }
 
 .btn-gray {
