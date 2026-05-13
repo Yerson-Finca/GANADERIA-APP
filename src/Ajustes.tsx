@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { db, Lote } from './db'
 import Icono from './iconos'
-import ModalInput from './ModalInput'
 import ModalForm from './ModalForm'
 import ModalConfirm from './ModalConfirm'
 
@@ -50,11 +49,10 @@ const Ajustes: React.FC<Props> = ({ recargar, animales }) => {
   }
 
   return (
-    <div className="gap-16" style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* Lotes */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="card">
         <div className="section-title"><Icono nombre="cube" tamaño={14} /> LOTES</div>
-        {lotes.length === 0 && <p className="text-muted">No hay lotes creados</p>}
+        {lotes.length === 0 && <p className="text-muted" style={{ fontSize: 12 }}>No hay lotes creados</p>}
         {lotes.map(l => (
           <div key={l.id} className="row">
             <span className="row-label">{l.tipo === 'engorde' ? '🐮' : '🐄'} {l.nombre}</span>
@@ -68,27 +66,18 @@ const Ajustes: React.FC<Props> = ({ recargar, animales }) => {
         </button>
       </div>
 
-      {/* Respaldos */}
       <div className="card">
         <div className="section-title"><Icono nombre="export" tamaño={14} /> RESPALDO</div>
-        <div className="gap-8" style={{ display: 'flex', flexDirection: 'column' }}>
-          <button className="btn btn-sm w-full" onClick={exportar}>
-            <Icono nombre="export" tamaño={14} /> Exportar
-          </button>
-          <button className="btn btn-sm w-full" onClick={importar}>
-            <Icono nombre="import" tamaño={14} /> Importar
-          </button>
-        </div>
+        <button className="btn btn-sm w-full mb-8" onClick={exportar}><Icono nombre="export" tamaño={14} /> Exportar</button>
+        <button className="btn btn-sm w-full" onClick={importar}><Icono nombre="import" tamaño={14} /> Importar</button>
       </div>
 
-      {/* Info */}
       <div className="card">
-        <div className="section-title"><Icono nombre="sparkles" tamaño={14} /> INFORMACIÓN</div>
+        <div className="section-title"><Icono nombre="sparkles" tamaño={14} /> INFO</div>
         <p className="text-secondary" style={{ fontSize: 12 }}>GANADERO ÉLITE v6.0</p>
         <p className="text-muted" style={{ fontSize: 11 }}>Animales: {animales.length} · Lotes: {lotes.length}</p>
       </div>
 
-      {/* Modales */}
       {showLote && (
         <ModalForm
           titulo="Nuevo lote"
