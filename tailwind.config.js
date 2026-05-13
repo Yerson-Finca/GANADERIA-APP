@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         bg: '#000000',
-        card: '#0F0F0F',
+        card: '#0A0A0A',
         border: '#1A1A1A',
         accent: '#FDCC0D',
-        'accent-glow': 'rgba(79, 209, 197, 0.12)',
-        success: '##FDCC0D',
+        'accent-glow': 'rgba(253, 204, 13, 0.08)',
+        success: '#FDCC0D',
         danger: '#FF6B6B',
         warning: '#F59E0B',
         info: '#60A5FA',
         ia: '#7C3AED',
-        'ia-glow': 'rgba(124, 58, 237, 0.12)',
+        'ia-glow': 'rgba(124, 58, 237, 0.08)',
         text: {
           primary: '#FFFFFF',
           secondary: '#A0AEC0',
@@ -29,17 +29,11 @@ export default {
       },
       fontSize: {
         'h1': ['28px', { fontWeight: '900', lineHeight: '1.15' }],
-        'h2': ['18px', { fontWeight: '700', lineHeight: '1.2' }],
-        'h3': ['15px', { fontWeight: '600', lineHeight: '1.2' }],
+        'h2': ['16px', { fontWeight: '700', lineHeight: '1.2' }],
+        'h3': ['14px', { fontWeight: '600', lineHeight: '1.2' }],
         'val': ['20px', { fontWeight: '800', lineHeight: '1.1' }],
         'label': ['13px', { fontWeight: '400' }],
         'muted': ['11px', { fontWeight: '400' }],
-      },
-      boxShadow: {
-        'card': '0 1px 3px rgba(0,0,0,0.5)',
-        'accent': '0 0 20px rgba(79, 209, 197, 0.15)',
-        'ia': '0 0 15px rgba(124, 58, 237, 0.1), 0 0 30px rgba(124, 58, 237, 0.05)',
-        'btn-add': '0 0 20px rgba(79, 209, 197, 0.25), 0 0 40px rgba(79, 209, 197, 0.08)',
       },
     }
   },
