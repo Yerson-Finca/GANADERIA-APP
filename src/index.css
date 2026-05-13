@@ -42,7 +42,9 @@ body {
 }
 
 .ia-card {
-  @apply rounded-2xl p-4 mb-3;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
   background: rgba(10, 10, 10, 0.75);
   border: 1px solid rgba(124, 58, 237, 0.2);
   box-shadow: 0 0 12px rgba(124, 58, 237, 0.06), 0 0 0 1px rgba(124, 58, 237, 0.03);
