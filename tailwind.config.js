@@ -1,27 +1,22 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        bg: '#1A1A1A',
-        card: '#242424',
-        border: '#333333',
-        accent: '#fdcc0d',
-        'accent-light': 'rgba(201,169,110,0.12)',
-        success: '#fdcc0d',
-        'success-light': 'rgba(91,154,107,0.12)',
-        danger: '#E0554A',
-        'danger-light': 'rgba(201,112,101,0.12)',
-        warning: '#D4A853',
-        'warning-light': 'rgba(212,168,83,0.12)',
-        info: '#7BA4C9',
-        ia: '#9B8EC4',
-        'ia-light': 'rgba(155,142,196,0.12)',
-        text: { primary: '#F5F5F5', secondary: '#AAAAAA', muted: '#777777' }
+        bg: '#0F0F0F',
+        card: '#1A1A1A',
+        border: 'rgba(255,255,255,0.04)',
+        accent: '#B8A080',
+        success: '#5A9E6F',
+        danger: '#C77D7D',
+        warning: '#C4A86C',
+        ia: '#8B7EC8',
+        text: { primary: '#E8E8E8', secondary: '#8E8E8E', muted: '#5C5C5C' }
       },
-      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-      borderRadius: { '2xl': '18px', '3xl': '22px' }
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace']
+      }
     }
   },
   plugins: []
