@@ -1,32 +1,27 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        bg: '#000000',
-        card: '#0A0A0A',
-        border: '#1A1A1A',
-        accent: '#FDCC0D',
-        'accent-glow': 'rgba(253, 204, 13, 0.08)',
-        success: '#FDCC0D',
-        danger: '#FF6B6B',
-        warning: '#F59E0B',
-        info: '#60A5FA',
-        ia: '#7C3AED',
-        'ia-glow': 'rgba(124, 58, 237, 0.08)',
-        text: {
-          primary: '#FFFFFF',
-          secondary: '#94A3B8',
-          muted: '#64748B',
-        }
+        bg: '#1A1A1A',
+        card: '#242424',
+        border: '#333333',
+        accent: '#C9A96E',
+        'accent-light': 'rgba(201,169,110,0.12)',
+        success: '#5B9A6B',
+        'success-light': 'rgba(91,154,107,0.12)',
+        danger: '#C97065',
+        'danger-light': 'rgba(201,112,101,0.12)',
+        warning: '#D4A853',
+        'warning-light': 'rgba(212,168,83,0.12)',
+        info: '#7BA4C9',
+        ia: '#9B8EC4',
+        'ia-light': 'rgba(155,142,196,0.12)',
+        text: { primary: '#F5F5F5', secondary: '#AAAAAA', muted: '#777777' }
       },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
-      }
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      borderRadius: { '2xl': '18px', '3xl': '22px' }
     }
   },
   plugins: []
