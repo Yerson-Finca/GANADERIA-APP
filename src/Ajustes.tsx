@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { db, Lote } from './db'
-import Icono from './iconos'
 import ModalForm from './ModalForm'
 import ModalConfirm from './ModalConfirm'
 
@@ -15,22 +14,18 @@ const Ajustes: React.FC<Props> = ({ recargar, animales }) => {
 
   const crearLote = async (datos: Record<string, string>) => {
     await db.lotes.add({ id: 'lote_' + Date.now(), nombre: datos.nombre, tipo: datos.tipo as any })
-    setShowLote(false)
-    db.lotes.toArray().then(setLotes)
+    setShowLote(false); db.lotes.toArray().then(setLotes)
   }
 
   const eliminarLote = async () => {
     if (!deleteId) return
-    await db.lotes.delete(deleteId)
-    db.lotes.toArray().then(setLotes)
-    setDeleteId(null)
+    await db.lotes.delete(deleteId); db.lotes.toArray().then(setLotes); setDeleteId(null)
   }
 
   const exportar = async () => {
     const data = { animales: await db.animales.toArray(), lotes: await db.lotes.toArray() }
     const b = new Blob([JSON.stringify(data)], { type: 'application/json' })
-    const a = document.createElement('a'); a.href = URL.createObjectURL(b)
-    a.download = 'ganadero-respaldo.json'; a.click()
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'ganadero-respaldo.json'; a.click()
   }
 
   const importar = () => {
@@ -49,53 +44,38 @@ const Ajustes: React.FC<Props> = ({ recargar, animales }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="page">
       <div className="card">
-        <div className="section-title"><Icono nombre="cube" tamaño={14} /> LOTES</div>
-        {lotes.length === 0 && <p className="text-muted" style={{ fontSize: 12 }}>No hay lotes creados</p>}
+        <div className="section-title">📊 LOTES</div>
+        {lotes.length === 0 && <p className="text-muted" style={{ fontSize: 12 }}>No hay lotes</p>}
         {lotes.map(l => (
           <div key={l.id} className="row">
-            <span className="row-label">{l.tipo === 'engorde' ? '🐮' : '🐄'} {l.nombre}</span>
-            <button className="btn-icon btn-icon-danger" onClick={() => setDeleteId(l.id)}>
-              <Icono nombre="trash" tamaño={14} />
-            </button>
+            <span className="row-label">{l.tipo === 'engorde' ? '🥩' : '🥛'} {l.nombre}</span>
+            <button className="btn btn-sm" style={{ background: 'rgba(255,0,0,0.06)', color: '#ef4444', width: 'auto' }} onClick={() => setDeleteId(l.id)}>🗑️</button>
           </div>
         ))}
-        <button className="btn btn-sm w-full mt-8" onClick={() => setShowLote(true)}>
-          <Icono nombre="plus" tamaño={14} /> Crear lote
-        </button>
+        <button className="btn btn-purple btn-sm mt8" onClick={() => setShowLote(true)}>➕ CREAR LOTE</button>
       </div>
 
       <div className="card">
-        <div className="section-title"><Icono nombre="export" tamaño={14} /> RESPALDO</div>
-        <button className="btn btn-sm w-full mb-8" onClick={exportar}><Icono nombre="export" tamaño={14} /> Exportar</button>
-        <button className="btn btn-sm w-full" onClick={importar}><Icono nombre="import" tamaño={14} /> Importar</button>
+        <div className="section-title">💾 RESPALDO</div>
+        <button className="btn btn-purple mb8" onClick={exportar}>📥 EXPORTAR</button>
+        <button className="btn btn-gray" onClick={importar}>📤 IMPORTAR</button>
       </div>
 
       <div className="card">
-        <div className="section-title"><Icono nombre="sparkles" tamaño={14} /> INFO</div>
-        <p className="text-secondary" style={{ fontSize: 12 }}>GANADERO ÉLITE v6.0</p>
-        <p className="text-muted" style={{ fontSize: 11 }}>Animales: {animales.length} · Lotes: {lotes.length}</p>
+        <div className="section-title">ℹ️ INFO</div>
+        <p className="text-muted" style={{ fontSize: 12 }}>GANADERO ÉLITE v6.0</p>
       </div>
 
       {showLote && (
-        <ModalForm
-          titulo="Nuevo lote"
-          campos={[
-            { nombre: 'nombre', label: 'Nombre', tipo: 'text', placeholder: 'Ej: Ceba Norte' },
-            { nombre: 'tipo', label: 'Tipo', tipo: 'select', opciones: [{ valor: 'engorde', label: 'Engorde' }, { valor: 'leche', label: 'Leche' }] },
-          ]}
-          onConfirm={crearLote}
-          onCancel={() => setShowLote(false)}
-        />
+        <ModalForm titulo="Nuevo lote" campos={[
+          { nombre: 'nombre', label: 'Nombre', tipo: 'text', placeholder: 'Ej: Ceba Norte' },
+          { nombre: 'tipo', label: 'Tipo', tipo: 'select', opciones: [{ valor: 'engorde', label: 'Engorde' }, { valor: 'leche', label: 'Leche' }] }
+        ]} onConfirm={crearLote} onCancel={() => setShowLote(false)} />
       )}
       {deleteId && (
-        <ModalConfirm
-          titulo="Eliminar lote"
-          mensaje="¿Eliminar este lote? Los animales quedarán sin lote."
-          onConfirm={eliminarLote}
-          onCancel={() => setDeleteId(null)}
-        />
+        <ModalConfirm titulo="Eliminar lote" mensaje="¿Eliminar este lote?" onConfirm={eliminarLote} onCancel={() => setDeleteId(null)} />
       )}
     </div>
   )
