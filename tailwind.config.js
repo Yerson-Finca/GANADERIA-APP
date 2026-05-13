@@ -7,19 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#080808',
-        card: '#111111',
-        border: '#1A1A1A',
-        accent: '#F58025',
-        'accent-glow': 'rgba(245,128,37,0.15)',
-        success: '#22C55E',
-        danger: '#EF4444',
+        bg: '#0B0B0F',
+        card: '#1A1A2E',
+        border: '#2A2A3E',
+        accent: '#00D4AA',
+        'accent-glow': 'rgba(0, 212, 170, 0.15)',
+        success: '#00D4AA',
+        danger: '#FF4757',
         warning: '#F59E0B',
         info: '#60A5FA',
+        ia: '#8B5CF6',
+        'ia-glow': 'rgba(139, 92, 246, 0.15)',
         text: {
           primary: '#FFFFFF',
-          secondary: '#AAAAAA',
-          muted: '#666666',
+          secondary: '#8B8B9E',
+          muted: '#5C5C7A',
         }
       },
       fontFamily: {
@@ -34,8 +36,10 @@ export default {
         'muted': ['11px', { fontWeight: '400' }],
       },
       boxShadow: {
-        'card': '2px 2px 0px rgba(0,0,0,0.5)',
-        'accent': '2px 2px 0px rgba(245,128,37,0.3)',
+        'card': '0 2px 8px rgba(0,0,0,0.3)',
+        'accent': '0 0 20px rgba(0, 212, 170, 0.2)',
+        'ia': '0 0 15px rgba(139, 92, 246, 0.1), 0 0 30px rgba(139, 92, 246, 0.05)',
+        'btn-add': '0 0 25px rgba(0, 212, 170, 0.3), 0 0 50px rgba(0, 212, 170, 0.1)',
       },
     }
   },
