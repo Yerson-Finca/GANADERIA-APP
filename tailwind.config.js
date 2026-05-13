@@ -17,9 +17,10 @@ export default {
   warning: '#C8841A',                   // Ámbar
   info: '#60A5FA',                      // Azul (IA)
   text: {
-  primary: '#FFF8E7',
-  secondary: '#C4A882',
-  muted: '#8B7355'
+  primary: '#FFFFFF',       // T1 - Blanco (títulos)
+  accent: '#D4A574',        // T2 - Ámbar (precios, valores)
+  secondary: '#A0A0A0',     // T3 - Gris claro (etiquetas)
+  muted: '#666666',         // T4 - Gris oscuro (fechas)
 }
 },
       fontFamily: {
