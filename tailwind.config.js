@@ -9,7 +9,7 @@ export default {
         border: '#333333',
         accent: '#fdcc0d',
         'accent-light': 'rgba(201,169,110,0.12)',
-        success: '#4CAF50',
+        success: '#fdcc0d',
         'success-light': 'rgba(91,154,107,0.12)',
         danger: '#E0554A',
         'danger-light': 'rgba(201,112,101,0.12)',
