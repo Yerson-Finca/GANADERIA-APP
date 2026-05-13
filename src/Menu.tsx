@@ -1,6 +1,48 @@
 import React, { useState } from 'react'
-import Icono from './iconos'
 import ModalAgregar from './ModalAgregar'
+
+// SVG del icono +
+const IconoPlus = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+)
+
+// SVGs de los íconos del menú
+const IconoAjustes = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  </svg>
+)
+
+const IconoInsumos = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+    <path d="M3.3 7l8.7 5 8.7-5" />
+    <path d="M12 22V12" />
+  </svg>
+)
+
+const IconoDashboard = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18" />
+    <path d="M18 17V9" />
+    <path d="M13 17V5" />
+    <path d="M8 17v-3" />
+  </svg>
+)
+
+const IconoAnimales = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 6h13" />
+    <path d="M8 12h13" />
+    <path d="M8 18h13" />
+    <path d="M3 6h.01" />
+    <path d="M3 12h.01" />
+    <path d="M3 18h.01" />
+  </svg>
+)
 
 interface MenuProps {
   pagina: string
@@ -10,45 +52,33 @@ interface MenuProps {
 const Menu: React.FC<MenuProps> = ({ pagina, cambiarPagina }) => {
   const [mostrarModal, setMostrarModal] = useState(false)
 
-  const botones = [
-    { id: 'ajustes', icono: 'cog-6-tooth', label: 'Ajustes' },
-    { id: 'insumos', icono: 'cube', label: 'Insumos' },
-    { id: 'animales', icono: 'list-bullet', label: 'Animales' },
-    { id: 'lote', icono: 'chart-bar', label: 'Dashboard' }
-  ]
-
   return (
     <>
       <nav className="bottom-nav">
-  {/* 1. Ajustes */}
-  <button onClick={() => cambiarPagina('ajustes')} className={`bn-btn ${pagina === 'ajustes' ? 'active' : ''}`}>
-    <Icono nombre="cog-6-tooth" tamaño={20} />
-    <span>Ajustes</span>
-  </button>
+        <button onClick={() => cambiarPagina('ajustes')} className={`bn-btn ${pagina === 'ajustes' ? 'active' : ''}`}>
+          <IconoAjustes />
+          <span>Ajustes</span>
+        </button>
 
-  {/* 2. Insumos */}
-  <button onClick={() => cambiarPagina('insumos')} className={`bn-btn ${pagina === 'insumos' ? 'active' : ''}`}>
-    <Icono nombre="cube" tamaño={20} />
-    <span>Insumos</span>
-  </button>
+        <button onClick={() => cambiarPagina('insumos')} className={`bn-btn ${pagina === 'insumos' ? 'active' : ''}`}>
+          <IconoInsumos />
+          <span>Insumos</span>
+        </button>
 
-  {/* 3. BOTÓN ➕ CENTRADO */}
-  <button onClick={() => setMostrarModal(true)} className="bn-btn-add" aria-label="Agregar animal">
-    <Icono nombre="plus" tamaño={24} variante="solid" />
-  </button>
+        <button onClick={() => setMostrarModal(true)} className="bn-btn-add" aria-label="Agregar animal">
+          <IconoPlus />
+        </button>
 
-  {/* 4. Lotes (Dashboard) */}
-  <button onClick={() => cambiarPagina('lote')} className={`bn-btn ${pagina === 'lote' ? 'active' : ''}`}>
-    <Icono nombre="chart-bar" tamaño={20} />
-    <span>Lotes</span>
-  </button>
+        <button onClick={() => cambiarPagina('lote')} className={`bn-btn ${pagina === 'lote' ? 'active' : ''}`}>
+          <IconoDashboard />
+          <span>Lotes</span>
+        </button>
 
-  {/* 5. Animales */}
-  <button onClick={() => cambiarPagina('animales')} className={`bn-btn ${pagina === 'animales' ? 'active' : ''}`}>
-    <Icono nombre="list-bullet" tamaño={20} />
-    <span>Animales</span>
-  </button>
-</nav>
+        <button onClick={() => cambiarPagina('animales')} className={`bn-btn ${pagina === 'animales' ? 'active' : ''}`}>
+          <IconoAnimales />
+          <span>Animales</span>
+        </button>
+      </nav>
 
       {mostrarModal && <ModalAgregar cerrar={() => setMostrarModal(false)} />}
     </>
