@@ -44,7 +44,7 @@ body {
   background: rgba(15, 15, 15, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,200,66,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(253,204,13,0.03);
 }
 
 .card-sm {
@@ -57,8 +57,8 @@ body {
 
 .ia-card {
   @apply bg-card border rounded-2xl p-4 mb-3.5;
-  border-color: rgba(124, 58, 237, 0.25);
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.08), 0 0 30px rgba(124, 58, 237, 0.03);
+  border-color: rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.06), 0 0 0 1px rgba(124, 58, 237, 0.04);
   background: rgba(15, 15, 15, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -213,10 +213,11 @@ input:focus, select:focus {
   transform: translateY(-2px);
 }
 
-.animal-card-inicio { border-left: 3px solid #F5C842; }
+.animal-card-inicio { border-left: 3px solid #FDCC0D; box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(253,204,13,0.04); }
+.animal-card-desarrollo { border-left: 3px solid #60A5FA; box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(96,165,250,0.04); }
+.animal-card-ceba { border-left: 3px solid #F59E0B; box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(245,158,11,0.04); }
+.animal-card-madurez { border-left: 3px solid #FF6B6B; box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,107,107,0.04); }
 .animal-card-desarrollo { border-left: 3px solid #60A5FA; }
-.animal-card-ceba { border-left: 3px solid #F59E0B; }
-.animal-card-madurez { border-left: 3px solid #FF6B6B; }
 
 .animal-card .name {
   @apply font-bold uppercase text-[0.68rem] text-white;
