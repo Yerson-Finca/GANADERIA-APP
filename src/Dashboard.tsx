@@ -134,5 +134,3 @@ const Dashboard: React.FC<Props> = ({ animales, preciosAlimento, stockAlimento, 
 }
 
 export default Dashboard
-export default Dashboard
-export default Dashboard
