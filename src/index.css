@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 /* ==================== COLORES DE TEXTO ==================== */
-.text-h1 { color: #4FD1C5; font-size: 28px; font-weight: 900; line-height: 1.15; }
-.text-h2 { color: #4FD1C5; font-size: 18px; font-weight: 700; line-height: 1.2; }
-.text-h3 { color: #4FD1C5; font-size: 15px; font-weight: 600; line-height: 1.2; }
+.text-h1 { color: #F5C842; font-size: 28px; font-weight: 900; line-height: 1.15; }
+.text-h2 { color: #F5C842; font-size: 18px; font-weight: 700; line-height: 1.2; }
+.text-h3 { color: #F5C842; font-size: 15px; font-weight: 600; line-height: 1.2; }
 .text-val { color: #FFFFFF; font-size: 20px; font-weight: 800; line-height: 1.1; }
 .text-label { color: #A0AEC0; font-size: 13px; font-weight: 400; }
 .text-muted { color: #4A5568; font-size: 11px; font-weight: 400; }
-.text-success { color: #4FD1C5; }
+.text-success { color: #F5C842; }
 .text-danger { color: #FF6B6B; }
 .text-info { color: #60A5FA; }
 .text-ia { color: #7C3AED; }
@@ -44,6 +44,7 @@ body {
   background: rgba(15, 15, 15, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,200,66,0.03);
 }
 
 .card-sm {
@@ -51,6 +52,7 @@ body {
   background: rgba(15, 15, 15, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .ia-card {
@@ -92,8 +94,8 @@ select option {
 }
 
 input:focus, select:focus {
-  border-color: #4FD1C5;
-  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.08), 0 0 12px rgba(79, 209, 197, 0.06);
+  border-color: rgba(245, 200, 66, 0.4);
+  box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.06), 0 0 12px rgba(245, 200, 66, 0.04);
 }
 
 /* ==================== BOTONES ==================== */
@@ -108,10 +110,10 @@ input:focus, select:focus {
 .btn:last-child { margin-bottom: 0; }
 
 .btn-green {
-  background: #4FD1C5;
+  background: #F5C842;
   color: #000;
-  border-color: #4FD1C5;
-  box-shadow: 0 0 12px rgba(79, 209, 197, 0.15);
+  border-color: #F5C842;
+  box-shadow: 0 0 12px rgba(245, 200, 66, 0.12);
 }
 
 .btn-gray {
@@ -202,15 +204,16 @@ input:focus, select:focus {
   @apply border rounded-2xl p-3.5 text-center cursor-pointer relative transition-all duration-200;
   background: rgba(15, 15, 15, 0.7);
   border-color: #1A1A1A;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .animal-card:active {
-  border-color: #4FD1C5;
-  box-shadow: 0 0 15px rgba(79, 209, 197, 0.1);
+  border-color: rgba(245, 200, 66, 0.3);
+  box-shadow: 0 0 15px rgba(245, 200, 66, 0.08);
   transform: translateY(-2px);
 }
 
-.animal-card-inicio { border-left: 3px solid #4FD1C5; }
+.animal-card-inicio { border-left: 3px solid #F5C842; }
 .animal-card-desarrollo { border-left: 3px solid #60A5FA; }
 .animal-card-ceba { border-left: 3px solid #F59E0B; }
 .animal-card-madurez { border-left: 3px solid #FF6B6B; }
@@ -244,7 +247,7 @@ input:focus, select:focus {
   @apply inline-block px-2 py-0.5 rounded-lg text-[0.55rem] font-semibold my-0.5;
 }
 
-.etapa-inicio { background: rgba(79, 209, 197, 0.12); color: #4FD1C5; }
+.etapa-inicio { background: rgba(245, 200, 66, 0.1); color: #F5C842; }
 .etapa-desarrollo { background: rgba(96, 165, 250, 0.12); color: #60A5FA; }
 .etapa-ceba { background: rgba(245, 158, 11, 0.12); color: #F59E0B; }
 .etapa-madurez { background: rgba(255, 107, 107, 0.12); color: #FF6B6B; }
@@ -254,7 +257,7 @@ input:focus, select:focus {
   @apply absolute top-2.5 right-2.5 w-2 h-2 rounded-full;
 }
 
-.led-green { background: #4FD1C5; box-shadow: 0 0 5px rgba(79, 209, 197, 0.4); }
+.led-green { background: #F5C842; box-shadow: 0 0 5px rgba(245, 200, 66, 0.3); }
 .led-blue { background: #60A5FA; box-shadow: 0 0 5px rgba(96, 165, 250, 0.4); }
 .led-orange { background: #F59E0B; box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
 .led-red { background: #FF6B6B; box-shadow: 0 0 5px rgba(255, 107, 107, 0.4); }
@@ -271,7 +274,7 @@ input:focus, select:focus {
   @apply flex items-center gap-3.5 p-3.5 rounded-2xl mb-3.5 border;
 }
 
-.alerta-card-verde { background: rgba(79, 209, 197, 0.08); border-color: rgba(79, 209, 197, 0.2); }
+.alerta-card-verde { background: rgba(245, 200, 66, 0.06); border-color: rgba(245, 200, 66, 0.15); }
 .alerta-card-azul { background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2); }
 .alerta-card-naranja { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.2); }
 .alerta-card-rojo { background: rgba(255, 107, 107, 0.08); border-color: rgba(255, 107, 107, 0.2); }
@@ -280,7 +283,7 @@ input:focus, select:focus {
   @apply w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0 text-black;
 }
 
-.alerta-led-verde { background: #4FD1C5; }
+.alerta-led-verde { background: #F5C842; }
 .alerta-led-azul { background: #60A5FA; }
 .alerta-led-naranja { background: #F59E0B; }
 .alerta-led-rojo { background: #FF6B6B; }
@@ -298,7 +301,7 @@ input:focus, select:focus {
   @apply inline-block w-3.5 h-3.5 rounded-full mr-1 align-middle;
 }
 
-.semaforo-verde { background: #4FD1C5; box-shadow: 0 0 5px rgba(79, 209, 197, 0.4); }
+.semaforo-verde { background: #F5C842; box-shadow: 0 0 5px rgba(245, 200, 66, 0.3); }
 .semaforo-amarillo { background: #F59E0B; box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
 .semaforo-rojo { background: #FF6B6B; box-shadow: 0 0 5px rgba(255, 107, 107, 0.4); }
 
@@ -313,7 +316,7 @@ input:focus, select:focus {
   @apply text-[0.62rem] font-semibold px-1.5 py-0.5 rounded-md;
 }
 
-.badge-up { background: rgba(79, 209, 197, 0.12); color: #4FD1C5; }
+.badge-up { background: rgba(245, 200, 66, 0.1); color: #F5C842; }
 .badge-down { background: rgba(255, 107, 107, 0.12); color: #FF6B6B; }
 
 /* ==================== PERFIL ==================== */
@@ -324,8 +327,8 @@ input:focus, select:focus {
 .profile-avatar {
   @apply w-20 h-20 rounded-full flex items-center justify-center text-[2.5rem] mx-auto mb-2 overflow-hidden cursor-pointer;
   background: rgba(0, 0, 0, 0.6);
-  border: 2px solid #4FD1C5;
-  box-shadow: 0 0 15px rgba(79, 209, 197, 0.15);
+  border: 2px solid #F5C842;
+  box-shadow: 0 0 15px rgba(245, 200, 66, 0.1);
 }
 
 .profile-avatar img {
@@ -334,7 +337,7 @@ input:focus, select:focus {
 
 .profile-name {
   @apply font-black text-xl;
-  color: #4FD1C5;
+  color: #F5C842;
 }
 
 .profile-sub {
@@ -387,17 +390,18 @@ input:focus, select:focus {
   @apply border rounded-2xl p-4 mb-2.5 cursor-pointer transition-all duration-200;
   background: rgba(15, 15, 15, 0.7);
   border-color: #1A1A1A;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .lote-card:active {
-  border-color: #4FD1C5;
-  box-shadow: 0 0 15px rgba(79, 209, 197, 0.1);
+  border-color: rgba(245, 200, 66, 0.3);
+  box-shadow: 0 0 15px rgba(245, 200, 66, 0.08);
   transform: translateY(-2px);
 }
 
 .lote-nombre {
   @apply font-bold text-sm mb-2 flex items-center gap-1.5 justify-between;
-  color: #4FD1C5;
+  color: #F5C842;
 }
 
 .lote-stats {
@@ -478,11 +482,12 @@ input:focus, select:focus {
   @apply p-3 rounded-2xl mb-2.5 border;
   background: rgba(15, 15, 15, 0.7);
   border-color: #1A1A1A;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .config-section h3 {
   @apply text-[0.7rem] font-bold mb-1.5 flex items-center gap-1.5;
-  color: #4FD1C5;
+  color: #F5C842;
 }
 
 /* ==================== MENÚ INFERIOR ==================== */
@@ -500,18 +505,18 @@ input:focus, select:focus {
 }
 
 .bn-btn.active {
-  color: #4FD1C5;
+  color: #F5C842;
 }
 
 .bn-btn-add {
   @apply w-[50px] h-[50px] rounded-full text-black text-xl cursor-pointer flex items-center justify-center mx-1.5 -mt-2.5 transition-all duration-200 flex-shrink-0 font-sans;
-  background: #4FD1C5;
-  box-shadow: 0 0 20px rgba(79, 209, 197, 0.25), 0 0 40px rgba(79, 209, 197, 0.08);
+  background: #F5C842;
+  box-shadow: 0 0 20px rgba(245, 200, 66, 0.25), 0 0 40px rgba(245, 200, 66, 0.08);
 }
 
 .bn-btn-add:active {
   transform: scale(0.92);
-  box-shadow: 0 0 30px rgba(79, 209, 197, 0.4);
+  box-shadow: 0 0 30px rgba(245, 200, 66, 0.35);
 }
 
 /* ==================== MODAL ==================== */
@@ -533,17 +538,17 @@ input:focus, select:focus {
 
 .modal-title {
   @apply font-bold text-sm mb-3 flex items-center gap-2;
-  color: #4FD1C5;
+  color: #F5C842;
 }
 
 /* ==================== TOAST ==================== */
 .toast {
   @apply fixed top-5 left-1/2 -translate-x-1/2 border px-5 py-3.5 rounded-3xl z-[1000] font-medium text-sm text-white text-center max-w-[90%];
   background: rgba(15, 15, 15, 0.9);
-  border-color: #4FD1C5;
+  border-color: #F5C842;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 0 15px rgba(79, 209, 197, 0.15);
+  box-shadow: 0 0 15px rgba(245, 200, 66, 0.12);
   animation: slideDown 0.3s ease;
 }
 
