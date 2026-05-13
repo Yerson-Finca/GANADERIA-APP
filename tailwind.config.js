@@ -20,23 +20,14 @@ export default {
         'ia-glow': 'rgba(124, 58, 237, 0.08)',
         text: {
           primary: '#FFFFFF',
-          secondary: '#A0AEC0',
-          muted: '#4A5568',
+          secondary: '#94A3B8',
+          muted: '#64748B',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif']
-      },
-      fontSize: {
-        'h1': ['28px', { fontWeight: '900', lineHeight: '1.15' }],
-        'h2': ['16px', { fontWeight: '700', lineHeight: '1.2' }],
-        'h3': ['14px', { fontWeight: '600', lineHeight: '1.2' }],
-        'val': ['20px', { fontWeight: '800', lineHeight: '1.1' }],
-        'label': ['13px', { fontWeight: '400' }],
-        'muted': ['11px', { fontWeight: '400' }],
-      },
+      }
     }
   },
   plugins: []
-}
 }
