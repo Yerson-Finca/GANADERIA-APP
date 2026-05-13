@@ -396,6 +396,16 @@ const Perfil: React.FC<Props> = ({ animalId, precioKG, litroLeche, preciosAlimen
         })}
       </div>
 
+      {/* Dieta */}
+<div className="card-sm mb-3">
+  <div className="font-bold text-xs text-text-primary mb-2">🧪 DIETA DIARIA</div>
+  <div className="row"><span className="row-label">🌱 Pasto</span><span className="row-val">{(dieta.pasto || 0).toFixed(1)} kg</span></div>
+  <div className="row"><span className="row-label">🌾 Salvado</span><span className="row-val">{(dieta.salvado || 0).toFixed(2)} kg</span></div>
+  <div className="row"><span className="row-label">💧 Melaza</span><span className="row-val">{Math.round(dieta.melaza || 0)} g</span></div>
+  <div className="row"><span className="row-label">⚗️ UREA</span><span className="row-val">{Math.round(dieta.urea || 0)} g {etapa.ureaBloqueada ? '🔒' : ''}</span></div>
+  <div className="row"><span className="row-label">🧂 Sal</span><span className="row-val">{Math.round(dieta.sal || 0)} g</span></div>
+</div>
+
       {/* Botones de acción */}
       <div className="flex gap-2 mb-3">
         {animal.tipo === 'leche' && animal.estadoRepro === 'parida' && semaforo && semaforo.dias >= 60 && !animal.fechaPrenez && (
