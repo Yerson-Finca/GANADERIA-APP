@@ -20,6 +20,8 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
   const [stockSanidad, setStockSanidad] = useState<Record<string, number>>({})
   const [showSup, setShowSup] = useState(false)
   const [showSan, setShowSan] = useState(false)
+  const [buySupId, setBuySupId] = useState<string | null>(null)
+  const [buySanId, setBuySanId] = useState<string | null>(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -50,11 +52,9 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
 
   const addSuplemento = async (datos: Record<string, string>) => {
     await db.suplementosAlimento.add({
-      id: 'sup_' + Date.now(),
-      nombre: datos.nombre,
+      id: 'sup_' + Date.now(), nombre: datos.nombre,
       gramosPorKg: parseInt(datos.gramos) || 50,
-      precioPorKg: parseFloat(datos.precio) || 0,
-      stock: 0
+      precioPorKg: parseFloat(datos.precio) || 0, stock: 0
     })
     setShowSup(false)
     cargar()
@@ -62,15 +62,40 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
 
   const addSanidad = async (datos: Record<string, string>) => {
     await db.suplementosSanidad.add({
-      id: 'san_' + Date.now(),
-      nombre: datos.nombre,
-      dosis: parseInt(datos.dosis) || 50,
-      diasEfecto: parseInt(datos.efecto) || 30,
-      retiro: parseInt(datos.retiro) || 0,
-      stock: 0, precioML: 0,
+      id: 'san_' + Date.now(), nombre: datos.nombre,
+      dosis: parseInt(datos.dosis) || 50, diasEfecto: parseInt(datos.efecto) || 30,
+      retiro: parseInt(datos.retiro) || 0, stock: 0, precioML: 0,
       icono: 'flask', color: '#9B8EC4', tipo: 'personalizado'
     })
     setShowSan(false)
+    cargar()
+  }
+
+  const buySuplemento = async (valor: string) => {
+    const partes = valor.split(',')
+    const kg = parseFloat(partes[0]?.trim())
+    const costo = parseFloat(partes[1]?.trim())
+    if (isNaN(kg) || isNaN(costo) || !buySupId) return
+    const sup = await db.suplementosAlimento.get(buySupId)
+    if (sup) {
+      await db.suplementosAlimento.update(buySupId, {
+        stock: (sup.stock || 0) + kg,
+        precioPorKg: sup.precioPorKg || (costo / kg)
+      })
+    }
+    setBuySupId(null)
+    cargar()
+  }
+
+  const buySanidad = async (valor: string) => {
+    const partes = valor.split(',')
+    const ml = parseFloat(partes[0]?.trim())
+    const costo = parseFloat(partes[1]?.trim())
+    if (isNaN(ml) || isNaN(costo) || !buySanId) return
+    const ns = { ...stockSanidad, [buySanId]: (stockSanidad[buySanId] || 0) + ml }
+    setStockSanidad(ns)
+    await setConfig('stockSanidad', ns)
+    setBuySanId(null)
     cargar()
   }
 
@@ -80,8 +105,7 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
   }
 
   return (
-    <div className="gap-16" style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* Alimentos */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="card">
         <div className="section-title"><Icono nombre="leaf" tamaño={14} /> ALIMENTOS</div>
         {ALIMENTOS.map(alim => {
@@ -107,40 +131,45 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
         })}
       </div>
 
-      {/* Suplementos */}
       <div className="card">
         <div className="section-title"><Icono nombre="flask" tamaño={14} /> SUPLEMENTOS</div>
         {suplementos.map(sup => (
-          <div key={sup.id} className="row" style={{ alignItems: 'flex-start' }}>
+          <div key={sup.id} className="row">
             <div style={{ flex: 1 }}>
               <div className="insumo-name">{sup.nombre}</div>
-              <div className="insumo-detail">{sup.gramosPorKg} g/kg · $ {fm(sup.precioPorKg || 0)}/kg · Stock: {fm(sup.stock || 0)} kg</div>
+              <div className="insumo-detail">{sup.gramosPorKg} g/kg · Stock: {fm(sup.stock || 0)} kg</div>
             </div>
+            <button className="btn-icon" onClick={() => setBuySupId(sup.id)}>
+              <Icono nombre="plus" tamaño={14} />
+            </button>
             <button className="btn-icon btn-icon-danger" onClick={() => eliminarSup(sup.id)}>
               <Icono nombre="trash" tamaño={14} />
             </button>
           </div>
         ))}
         <button className="btn btn-sm w-full mt-8" onClick={() => setShowSup(true)}>
-          <Icono nombre="plus" tamaño={14} /> Agregar
+          <Icono nombre="plus" tamaño={14} /> Agregar suplemento
         </button>
       </div>
 
-      {/* Sanidad */}
       <div className="card">
         <div className="section-title"><Icono nombre="syringe" tamaño={14} /> SANIDAD</div>
         {sanidad.map(prod => (
-          <div key={prod.id} className="row" key={prod.id}>
+          <div key={prod.id} className="row">
             <span className="row-label">{prod.nombre}</span>
-            <span className="row-val">{fm(prod.tipo === 'fijo' ? (stockSanidad[prod.id] || 0) : (prod.stock || 0))} ml</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <span className="row-val">{fm(prod.tipo === 'fijo' ? (stockSanidad[prod.id] || 0) : (prod.stock || 0))} ml</span>
+              <button className="btn-icon" onClick={() => setBuySanId(prod.id)}>
+                <Icono nombre="plus" tamaño={14} />
+              </button>
+            </div>
           </div>
         ))}
         <button className="btn btn-sm w-full mt-8" onClick={() => setShowSan(true)}>
-          <Icono nombre="plus" tamaño={14} /> Agregar
+          <Icono nombre="plus" tamaño={14} /> Agregar inyectable
         </button>
       </div>
 
-      {/* Modales */}
       {showSup && (
         <ModalForm
           titulo="Nuevo suplemento"
@@ -164,6 +193,22 @@ const Insumos: React.FC<Props> = ({ preciosAlimento, stockAlimento, animales, re
           ]}
           onConfirm={addSanidad}
           onCancel={() => setShowSan(false)}
+        />
+      )}
+      {buySupId && (
+        <ModalInput
+          titulo="Comprar suplemento"
+          placeholder="kg, costo total"
+          onConfirm={buySuplemento}
+          onCancel={() => setBuySupId(null)}
+        />
+      )}
+      {buySanId && (
+        <ModalInput
+          titulo="Comprar inyectable"
+          placeholder="ml, costo total"
+          onConfirm={buySanidad}
+          onCancel={() => setBuySanId(null)}
         />
       )}
     </div>
